@@ -1,0 +1,26 @@
+server:
+  port: 80
+
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    username: postgres
+    password: admin
+    url: jdbc:postgresql://127.0.0.1:5432/traffic_policing?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    com:
+      gyh:
+        payment:
+          mapper: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    groups:
+      enabled: true
+  show-actuator: true

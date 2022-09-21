@@ -12,10 +12,7 @@ spring:
 
 logging:
   level:
-    com:
-      gyh:
-        gis:
-          mapper: DEBUG
+    com.gyh.gis.mapper: DEBUG
 
 springdoc:
   swagger-ui:

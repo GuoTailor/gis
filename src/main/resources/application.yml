@@ -14,7 +14,7 @@ logging:
   level:
     com:
       gyh:
-        payment:
+        gis:
           mapper: DEBUG
 
 springdoc:

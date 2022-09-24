@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Component
-@ConfigurationProperties("aos.table-sharding.storage-metadata")
+@ConfigurationProperties("gis.storage-metadata")
 public class StorageMetadataTableShardingConfig extends TableShardingConfig {
     //分片表最大行数
     protected long shardingTableMaxRows = 2;

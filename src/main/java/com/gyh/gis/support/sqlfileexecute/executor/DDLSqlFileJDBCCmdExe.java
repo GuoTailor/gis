@@ -1,7 +1,6 @@
 package com.gyh.gis.support.sqlfileexecute.executor;
 
 import com.gyh.gis.support.sqlfileexecute.cmd.DDLSqlFileJDBCCmd;
-import com.gyh.gis.support.sqlfileexecute.cmd.DDLSqlFileJDBCCmdResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
@@ -30,7 +29,7 @@ public class DDLSqlFileJDBCCmdExe {
         public Map<String, String> paramsMap;
     }
 
-    public DDLSqlFileJDBCCmdResult execute(DDLSqlFileJDBCCmd cmd) throws SQLException,IOException {
+    public void execute(DDLSqlFileJDBCCmd cmd) throws SQLException, IOException {
         var ctx = new ExecutionContext(cmd);
         //验证参数
         this.checkCmd(ctx);
@@ -43,13 +42,9 @@ public class DDLSqlFileJDBCCmdExe {
 
         //执行sql语句
         this.executeSqls(ctx);
-
-        //组装业务结果
-        return this.composeResult(ctx);
     }
 
     private void replaceVars(ExecutionContext ctx) {
-        var cmd = ctx.cmd;
         var statementsUse = new ArrayList<String>(ctx.statements.size());
         var paramsMap = ctx.paramsMap;
         if (paramsMap == null || paramsMap.isEmpty()) {
@@ -68,16 +63,12 @@ public class DDLSqlFileJDBCCmdExe {
     private void splitStatements(ExecutionContext ctx) throws IOException {
         var cmd = ctx.cmd;
         try (var fileReader = cmd.getDdlSqlFileReader()) {
-
-            String script = ScriptUtils.readScript(new LineNumberReader(cmd.getDdlSqlFileReader()),
+            String script = ScriptUtils.readScript(new LineNumberReader(fileReader),
                     cmd.getCommentPrefix(), cmd.getStatementSeparator(), cmd.getBlockCommentEndDelimiter());
             ctx.statements = new ArrayList<>(5);
             ScriptUtils.splitSqlScript(null, script, cmd.getStatementSeparator(), new String[]{cmd.getCommentPrefix()},
                     cmd.getBlockCommentStartDelimiter(), cmd.getBlockCommentEndDelimiter(), ctx.statements);
-
         }
-
-
     }
 
     private void executeSqls(ExecutionContext ctx) throws SQLException {
@@ -117,10 +108,6 @@ public class DDLSqlFileJDBCCmdExe {
         }
         ctx.paramsMap = paramsMapUse;
 
-    }
-
-    private DDLSqlFileJDBCCmdResult composeResult(ExecutionContext ctx) {
-        return null;
     }
 
 }

@@ -58,12 +58,7 @@ public class DetermineTableNameForNewExe {
         var ctx = new ExecutionContext(input);
         //验证参数
         this.checkCmd(ctx);
-        try {
-            return doExecute(ctx);
-        } finally {
-            //释放资源
-            // this.finallyReleaseResource(ctx);
-        }
+        return doExecute(ctx);
     }
 
     private void finallyReleaseResource(ExecutionContext ctx) {
@@ -96,6 +91,9 @@ public class DetermineTableNameForNewExe {
         return this.composeResult(ctx);
     }
 
+    /**
+     * 新子表
+     */
     private void useNewShardingTable(ExecutionContext ctx) {
         var input = ctx.input;
         var originTableName = shardingConfig.getOriginTableName();
@@ -142,6 +140,9 @@ public class DetermineTableNameForNewExe {
         return false;
     }
 
+    /**
+     * 扩展表
+     */
     private void expandShardingTable(ExecutionContext ctx) {
         var shardingTable = ctx.currentShardingTable;
         //更新之前使用子表总行数
@@ -151,10 +152,7 @@ public class DetermineTableNameForNewExe {
         //记录当前子表
         ctx.currentShardingTable = this.recordCurrentShardingTableToDB(currentShardingTableName);
         //新建扩展子表
-
         this.createSharingTableFromFile(ctx);
-
-
     }
 
     private boolean isSharingTableNeedExpand(ExecutionContext ctx) {
@@ -162,10 +160,7 @@ public class DetermineTableNameForNewExe {
         //统计子表总记录数
         var maxRows = countTable(loadCurrentConnection(ctx), shardingTable.getTableName());
         shardingTable.setTotalRows(maxRows);
-        if (maxRows < shardingConfig.getShardingTableMaxRows()) {
-            return false;
-        }
-        return true;
+        return maxRows >= shardingConfig.getShardingTableMaxRows();
     }
 
     private long countTable(Connection connection, String tableName) {
@@ -212,7 +207,6 @@ public class DetermineTableNameForNewExe {
     }
 
     private void createSharingTableFromFile(ExecutionContext ctx) {
-        var input = ctx.input;
         var shardingTable = ctx.currentShardingTable;
 
         var sqlFileResource = resourcePatternResolver.getResource(shardingConfig.getCreateShardingTableSQLFile());

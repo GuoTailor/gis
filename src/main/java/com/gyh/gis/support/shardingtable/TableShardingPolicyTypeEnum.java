@@ -12,5 +12,6 @@ public enum TableShardingPolicyTypeEnum {
     YEAR,
     YEAR_QUARTER,
     YEAR_MONTH,
+    NEVER,
 
 }

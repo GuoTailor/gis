@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@MapperScan("com.gyh.gis.mapper")
+@MapperScan({"com.gyh.gis.mapper", "com.gyh.gis.support.shardingtable.metadata"})
 @EnableTransactionManagement
 public class GisApplication {
 

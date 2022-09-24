@@ -24,3 +24,10 @@ springdoc:
     groups:
       enabled: true
   show-actuator: true
+
+gis:
+  storage-metadata:
+    sharding-table-max-rows: 1_000_000
+    originTableName: test
+    createShardingTableSQLFile: classpath:/test.sql
+    policyType: NEVER

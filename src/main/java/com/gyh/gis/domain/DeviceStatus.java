@@ -7,7 +7,7 @@ import lombok.Data;
  * create by GYH on 2022/9/26
  */
 @Data
-public class DeviceTatus {
+public class DeviceStatus {
     private Integer id;
 
     /**

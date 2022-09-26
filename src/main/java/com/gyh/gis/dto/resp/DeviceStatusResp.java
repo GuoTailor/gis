@@ -1,17 +1,16 @@
-package com.gyh.gis.domain;
-
-import java.util.Date;
+package com.gyh.gis.dto.resp;
 
 import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * create by GYH on 2022/9/26
  */
 @Data
-public class DeviceStatus {
+public class DeviceStatusResp {
     private Integer id;
-
     /**
     * 站点id
     */

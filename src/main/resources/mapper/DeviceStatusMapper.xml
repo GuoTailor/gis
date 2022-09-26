@@ -1,162 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gyh.gis.mapper.DeviceStatusMapper">
-  <resultMap id="BaseResultMap" type="com.gyh.gis.domain.DeviceStatus">
-    <!--@mbg.generated-->
-    <!--@Table device_status-->
-    <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="station_id" jdbcType="INTEGER" property="stationId" />
-    <result column="error_state" jdbcType="VARCHAR" property="errorState" />
-    <result column="alarm_state" jdbcType="VARCHAR" property="alarmState" />
-    <result column="error_time" jdbcType="TIMESTAMP" property="errorTime" />
-    <result column="alarm_time" jdbcType="TIMESTAMP" property="alarmTime" />
-    <result column="alarm_value" jdbcType="REAL" property="alarmValue" />
-    <result column="cancel_alarm" jdbcType="OTHER" property="cancelAlarm" />
-    <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime" />
-    <result column="screenshot_url" jdbcType="VARCHAR" property="screenshotUrl" />
-  </resultMap>
-  <sql id="Base_Column_List">
-    <!--@mbg.generated-->
-    id, station_id, error_state, alarm_state, error_time, alarm_time, alarm_value, cancel_alarm, 
-    cancel_time, screenshot_url
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    <!--@mbg.generated-->
-    select 
-    <include refid="Base_Column_List" />
-    from device_status
-    where id = #{id,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    <!--@mbg.generated-->
-    delete from device_status
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" parameterType="com.gyh.gis.domain.DeviceStatus">
-    <!--@mbg.generated-->
-    insert into device_status (id, station_id, error_state, 
-      alarm_state, error_time, alarm_time, 
-      alarm_value, cancel_alarm, cancel_time, 
-      screenshot_url)
-    values (#{id,jdbcType=INTEGER}, #{stationId,jdbcType=INTEGER}, #{errorState,jdbcType=VARCHAR}, 
-      #{alarmState,jdbcType=VARCHAR}, #{errorTime,jdbcType=TIMESTAMP}, #{alarmTime,jdbcType=TIMESTAMP}, 
-      #{alarmValue,jdbcType=REAL}, #{cancelAlarm,jdbcType=OTHER}, #{cancelTime,jdbcType=TIMESTAMP}, 
-      #{screenshotUrl,jdbcType=VARCHAR})
-  </insert>
-  <insert id="insertSelective" parameterType="com.gyh.gis.domain.DeviceStatus">
-    <!--@mbg.generated-->
-    insert into device_status
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
+    <resultMap id="BaseResultMap" type="com.gyh.gis.domain.DeviceStatus">
+        <!--@mbg.generated-->
+        <!--@Table device_status-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="station_id" jdbcType="INTEGER" property="stationId"/>
+        <result column="error_state" jdbcType="VARCHAR" property="errorState"/>
+        <result column="alarm_state" jdbcType="VARCHAR" property="alarmState"/>
+        <result column="error_time" jdbcType="TIMESTAMP" property="errorTime"/>
+        <result column="alarm_time" jdbcType="TIMESTAMP" property="alarmTime"/>
+        <result column="alarm_value" jdbcType="REAL" property="alarmValue"/>
+        <result column="cancel_alarm" jdbcType="OTHER" property="cancelAlarm"/>
+        <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime"/>
+        <result column="screenshot_url" jdbcType="VARCHAR" property="screenshotUrl"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
         id,
-      </if>
-      <if test="stationId != null">
         station_id,
-      </if>
-      <if test="errorState != null">
         error_state,
-      </if>
-      <if test="alarmState != null">
         alarm_state,
-      </if>
-      <if test="errorTime != null">
         error_time,
-      </if>
-      <if test="alarmTime != null">
         alarm_time,
-      </if>
-      <if test="alarmValue != null">
         alarm_value,
-      </if>
-      <if test="cancelAlarm != null">
         cancel_alarm,
-      </if>
-      <if test="cancelTime != null">
         cancel_time,
-      </if>
-      <if test="screenshotUrl != null">
-        screenshot_url,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=INTEGER},
-      </if>
-      <if test="stationId != null">
-        #{stationId,jdbcType=INTEGER},
-      </if>
-      <if test="errorState != null">
-        #{errorState,jdbcType=VARCHAR},
-      </if>
-      <if test="alarmState != null">
-        #{alarmState,jdbcType=VARCHAR},
-      </if>
-      <if test="errorTime != null">
-        #{errorTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="alarmTime != null">
-        #{alarmTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="alarmValue != null">
-        #{alarmValue,jdbcType=REAL},
-      </if>
-      <if test="cancelAlarm != null">
-        #{cancelAlarm,jdbcType=OTHER},
-      </if>
-      <if test="cancelTime != null">
-        #{cancelTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="screenshotUrl != null">
-        #{screenshotUrl,jdbcType=VARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.DeviceStatus">
-    <!--@mbg.generated-->
-    update device_status
-    <set>
-      <if test="stationId != null">
-        station_id = #{stationId,jdbcType=INTEGER},
-      </if>
-      <if test="errorState != null">
-        error_state = #{errorState,jdbcType=VARCHAR},
-      </if>
-      <if test="alarmState != null">
-        alarm_state = #{alarmState,jdbcType=VARCHAR},
-      </if>
-      <if test="errorTime != null">
-        error_time = #{errorTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="alarmTime != null">
-        alarm_time = #{alarmTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="alarmValue != null">
-        alarm_value = #{alarmValue,jdbcType=REAL},
-      </if>
-      <if test="cancelAlarm != null">
-        cancel_alarm = #{cancelAlarm,jdbcType=OTHER},
-      </if>
-      <if test="cancelTime != null">
-        cancel_time = #{cancelTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="screenshotUrl != null">
-        screenshot_url = #{screenshotUrl,jdbcType=VARCHAR},
-      </if>
-    </set>
-    where id = #{id,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.DeviceStatus">
-    <!--@mbg.generated-->
-    update device_status
-    set station_id = #{stationId,jdbcType=INTEGER},
-      error_state = #{errorState,jdbcType=VARCHAR},
-      alarm_state = #{alarmState,jdbcType=VARCHAR},
-      error_time = #{errorTime,jdbcType=TIMESTAMP},
-      alarm_time = #{alarmTime,jdbcType=TIMESTAMP},
-      alarm_value = #{alarmValue,jdbcType=REAL},
-      cancel_alarm = #{cancelAlarm,jdbcType=OTHER},
-      cancel_time = #{cancelTime,jdbcType=TIMESTAMP},
-      screenshot_url = #{screenshotUrl,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=INTEGER}
-  </update>
+        screenshot_url
+    </sql>
 </mapper>

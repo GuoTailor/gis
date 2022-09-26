@@ -11,7 +11,7 @@
         <result column="error_time" jdbcType="TIMESTAMP" property="errorTime"/>
         <result column="alarm_time" jdbcType="TIMESTAMP" property="alarmTime"/>
         <result column="alarm_value" jdbcType="REAL" property="alarmValue"/>
-        <result column="cancel_alarm" jdbcType="OTHER" property="cancelAlarm"/>
+        <result column="cancel_alarm" jdbcType="BOOLEAN" property="cancelAlarm"/>
         <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime"/>
         <result column="screenshot_url" jdbcType="VARCHAR" property="screenshotUrl"/>
     </resultMap>

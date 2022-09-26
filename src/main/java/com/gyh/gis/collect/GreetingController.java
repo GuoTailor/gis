@@ -60,10 +60,12 @@ public class GreetingController {
     @Operation(summary = "testFy")
     @GetMapping("/testFy")
     public int testFy() {
-        DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput().setCreateTime(LocalDateTime.now()));
+        DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
+                .setOriginTableName("test")
+                .setCreateTime(LocalDateTime.now()));
         String tableName = execute.getTableName();
         Test test = new Test();
-        test.setAge((int)(Math.random() * 100));
+        test.setAge((int) (Math.random() * 100));
         test.setName("" + (Math.random() * 100));
         return testMapper.insertSelective(test, tableName);
     }

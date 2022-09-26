@@ -1,18 +1,14 @@
 package com.gyh.gis.domain;
 
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
-import org.apache.ibatis.type.BooleanTypeHandler;
-import org.apache.ibatis.type.JdbcType;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * create by GYH on 2022/9/26
  */
-@TableName(value = "device_status", autoResultMap = true)
 @Data
 public class DeviceStatus {
     private Integer id;
@@ -45,7 +41,7 @@ public class DeviceStatus {
     /**
      * 报警值
      */
-    private Float alarmValue;
+    private BigDecimal alarmValue;
 
     /**
      * 是否取消报警

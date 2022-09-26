@@ -7,21 +7,27 @@ import lombok.EqualsAndHashCode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Component
 @ConfigurationProperties("gis.storage-metadata")
 public class StorageMetadataTableShardingConfig extends TableShardingConfig {
-    //分片表最大行数
-    protected long shardingTableMaxRows = 2;
-    //原始表名称
-    protected String originTableName;
-    //mysql建表语句sql文件地址
-    protected String createShardingTableSQLFile;
-    //分片策略
-    protected TableShardingPolicyTypeEnum policyType;
-    //是否使用原始表
-    protected boolean useOriginTable = true;
-    
+    protected List<ShardingConfig> configs = new ArrayList<>();
 
+    @Data
+    public static class ShardingConfig {
+        //分片表最大行数
+        protected long shardingTableMaxRows = 2;
+        //原始表名称
+        protected String originTableName;
+        //mysql建表语句sql文件地址
+        protected String createShardingTableSQLFile;
+        //分片策略
+        protected TableShardingPolicyTypeEnum policyType;
+        //是否使用原始表
+        protected boolean useOriginTable = true;
+    }
 }

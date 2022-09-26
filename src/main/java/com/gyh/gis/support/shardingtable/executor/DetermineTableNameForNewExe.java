@@ -1,6 +1,7 @@
 package com.gyh.gis.support.shardingtable.executor;
 
 import com.gyh.gis.config.StorageMetadataTableShardingConfig;
+import com.gyh.gis.support.shardingtable.TableShardingPolicyTypeEnum;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
 import com.gyh.gis.support.shardingtable.metadata.ShardingTable;
@@ -103,12 +104,14 @@ public class DetermineTableNameForNewExe {
 
 
         //得到当前应该使用的子表名
-        var shardingTableNameShould = this.loadPolicy().generateShardingTableName(originTableName, input.getCreateTime());
+        var shardingTableNameShould = loadPolicy().generateShardingTableName(originTableName, input.getCreateTime());
 
         //先写入记录
-        ctx.currentShardingTable = this.recordCurrentShardingTableToDB(shardingTableNameShould);
-        //再创建子表，便于事务回滚
-        createSharingTableFromFile(ctx);
+        ctx.currentShardingTable = recordCurrentShardingTableToDB(shardingTableNameShould);
+        if (shardingConfig.getPolicyType() != TableShardingPolicyTypeEnum.NEVER) {
+            //再创建子表，便于事务回滚
+            createSharingTableFromFile(ctx);
+        }
 
     }
 
@@ -150,7 +153,7 @@ public class DetermineTableNameForNewExe {
         //确定子表扩展表名
         var currentShardingTableName = loadPolicy().generateNextShardingExpandTableName(shardingTable.getTableName());
         //记录当前子表
-        ctx.currentShardingTable = this.recordCurrentShardingTableToDB(currentShardingTableName);
+        ctx.currentShardingTable = recordCurrentShardingTableToDB(currentShardingTableName);
         //新建扩展子表
         this.createSharingTableFromFile(ctx);
     }
@@ -188,6 +191,9 @@ public class DetermineTableNameForNewExe {
         shardingTableDao.updateRowsById(previousShardingTable.getId(), previousShardingTable.getTotalRows());
     }
 
+    /**
+     * 记录当前分表名
+     */
     private ShardingTable recordCurrentShardingTableToDB(String currentShardingTableName) {
         ShardingTable table = new ShardingTable();
         table.setTableName(currentShardingTableName);

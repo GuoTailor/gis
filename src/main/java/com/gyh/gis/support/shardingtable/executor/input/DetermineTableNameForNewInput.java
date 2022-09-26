@@ -9,4 +9,10 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class DetermineTableNameForNewInput {
     LocalDateTime createTime;
+    /**
+     * 原表名
+     */
+    String originTableName;
+
+
 }

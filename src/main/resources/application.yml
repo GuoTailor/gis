@@ -25,9 +25,19 @@ springdoc:
       enabled: true
   show-actuator: true
 
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+
 gis:
   storage-metadata:
-    sharding-table-max-rows: 1_000_000
-    originTableName: test
-    createShardingTableSQLFile: classpath:/test.sql
-    policyType: NEVER
+    configs:
+      - sharding-table-max-rows: 1_000_000
+        originTableName: device_10minute_history
+        createShardingTableSQLFile: classpath:/device_10minute_history.sql
+        policyType: NEVER
+      - sharding-table-max-rows: 1
+        originTableName: test
+        createShardingTableSQLFile: classpath:/test.sql
+        policyType: NEVER

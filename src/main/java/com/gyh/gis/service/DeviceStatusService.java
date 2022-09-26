@@ -6,6 +6,7 @@ import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
+import com.gyh.gis.enums.StateEnum;
 import com.gyh.gis.mapper.DeviceStatusMapper;
 import com.gyh.gis.mapper.StationMapper;
 import com.gyh.gis.util.AssertUtils;
@@ -14,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * create by GYH on 2022/9/26
@@ -30,21 +32,38 @@ public class DeviceStatusService {
      * 有就更新，没有就新增
      */
     public void insertOrUpdate(DeviceStatusInsertReq req) {
-        DeviceStatus deviceStatus = new DeviceStatus();
-        BeanUtils.copyProperties(req, deviceStatus);
         QueryWrapper<DeviceStatus> wrapper = Wrappers.<DeviceStatus>query().eq("station_id", req.getStationId());
         Station station = stationMapper.selectById(req.getStationId());
         AssertUtils.notNull(station, "站点信息不存在", req.getStationId());
         // TODO 保存历史数据
+        // 保存最新数据
         synchronized (DeviceStatusService.class) {
             DeviceStatus oldDevice = deviceStatusMapper.selectOne(wrapper);
             if (oldDevice != null) {
-                if (station.getFlow().compareTo(req.getAlarmValue()) < 0) {
-
+                oldDevice.setAlarmValue(req.getAlarmValue());
+                if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
+                    oldDevice.setAlarmState(StateEnum.ALARM);
+                    oldDevice.setAlarmTime(new Date());
+                    oldDevice.setCancelAlarm(false);
+                    oldDevice.setCancelTime(null);
+                    oldDevice.setScreenshotUrl(req.getScreenshotUrl());
+                } else {
+                    oldDevice.setAlarmState(StateEnum.NORMAL);
+                    oldDevice.setCancelAlarm(true);
+                    oldDevice.setScreenshotUrl(null);
                 }
-                deviceStatus.setId(oldDevice.getId());
                 deviceStatusMapper.updateById(oldDevice);
             } else {
+                DeviceStatus deviceStatus = new DeviceStatus();
+                BeanUtils.copyProperties(req, deviceStatus);
+                if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
+                    deviceStatus.setAlarmState(StateEnum.ALARM);
+                    deviceStatus.setAlarmTime(new Date());
+                    deviceStatus.setCancelAlarm(false);
+                } else {
+                    deviceStatus.setAlarmState(StateEnum.NORMAL);
+                    deviceStatus.setCancelAlarm(true);
+                }
                 deviceStatusMapper.insert(deviceStatus);
             }
         }
@@ -63,5 +82,9 @@ public class DeviceStatusService {
         DeviceStatusResp resp = new DeviceStatusResp();
         BeanUtils.copyProperties(deviceStatus, resp);
         return resp;
+    }
+
+    public void update(DeviceStatus status) {
+        deviceStatusMapper.updateById(status);
     }
 }

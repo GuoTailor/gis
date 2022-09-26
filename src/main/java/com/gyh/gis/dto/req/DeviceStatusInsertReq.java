@@ -3,6 +3,7 @@ package com.gyh.gis.dto.req;
 import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -39,7 +40,7 @@ public class DeviceStatusInsertReq {
     /**
     * 报警值
     */
-    private Float alarmValue;
+    private BigDecimal alarmValue;
 
     /**
     * 是否取消报警

@@ -28,4 +28,5 @@
         cancel_time,
         screenshot_url
     </sql>
+
 </mapper>

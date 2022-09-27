@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gyh.gis.mapper.Device10minuteHistoryMapper">
+    <resultMap id="BaseResultMap" type="com.gyh.gis.domain.Device10minuteHistory">
+        <!--@mbg.generated-->
+        <!--@Table device_10minute_history-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="station_id" jdbcType="INTEGER" property="stationId"/>
+        <result column="value" jdbcType="REAL" property="value"/>
+        <result column="time" jdbcType="TIMESTAMP" property="time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        station_id,
+        "value",
+        "time"
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        <!--@mbg.generated-->
+        select
+        <include refid="Base_Column_List"/>
+        from device_10minute_history
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        <!--@mbg.generated-->
+        delete
+        from device_10minute_history
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.gyh.gis.domain.Device10minuteHistory">
+        <!--@mbg.generated-->
+        insert into device_10minute_history (id, station_id, "value",
+                                             "time")
+        values (#{id,jdbcType=BIGINT}, #{stationId,jdbcType=INTEGER}, #{value,jdbcType=REAL},
+                #{time,jdbcType=TIMESTAMP})
+    </insert>
+    <insert id="insertSelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
+        <!--@mbg.generated-->
+        insert into ${tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="record.id != null">
+                id,
+            </if>
+            <if test="record.stationId != null">
+                station_id,
+            </if>
+            <if test="record.value != null">
+                "value",
+            </if>
+            <if test="record.time != null">
+                "time",
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="record.id != null">
+                #{record.id,jdbcType=BIGINT},
+            </if>
+            <if test="record.stationId != null">
+                #{record.stationId,jdbcType=INTEGER},
+            </if>
+            <if test="record.value != null">
+                #{record.value,jdbcType=REAL},
+            </if>
+            <if test="record.time != null">
+                #{record.time,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
+        <!--@mbg.generated-->
+        update device_10minute_history
+        <set>
+            <if test="stationId != null">
+                station_id = #{stationId,jdbcType=INTEGER},
+            </if>
+            <if test="value != null">
+                "value" = #{value,jdbcType=REAL},
+            </if>
+            <if test="time != null">
+                "time" = #{time,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.Device10minuteHistory">
+        <!--@mbg.generated-->
+        update device_10minute_history
+        set station_id = #{stationId,jdbcType=INTEGER},
+            "value"    = #{value,jdbcType=REAL},
+            "time"     = #{time,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="nextId" resultType="long">
+        select nextval('device_10minute_history_id_seq')
+    </select>
+</mapper>

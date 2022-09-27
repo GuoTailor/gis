@@ -13,7 +13,7 @@ public interface ShardingTableDao extends BaseMapper<ShardingTable> {
                 .eq(ShardingTable::getOriginName, originTable)
                 .eq(ShardingTable::getPolicyType, type)
                 .orderByDesc(ShardingTable::getCreateTime)
-                .last("limit 1")
+                .last("limit 1 for update")
         );
     }
 

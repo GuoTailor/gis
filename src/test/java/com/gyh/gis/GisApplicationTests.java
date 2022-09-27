@@ -5,6 +5,7 @@ import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.StateEnum;
 import com.gyh.gis.service.DeviceStatusService;
+import com.gyh.gis.service.StationService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
@@ -13,12 +14,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @SpringBootTest
 class GisApplicationTests {
     @Autowired
     private DeviceStatusService deviceStatusService;
+    @Autowired
+    private StationService stationService;
 
     @Test
     void contextLoads() {
@@ -42,6 +46,13 @@ class GisApplicationTests {
         deviceStatus.setCancelAlarm(null);
         deviceStatus.setScreenshotUrl(null);
         deviceStatusService.update(deviceStatus);
+    }
+
+    @Test
+    public void testSelect() {
+        List<Integer> objects = stationService.selectAll();
+        System.out.println(objects);
+        System.out.println(objects.get(0).getClass().getName());
     }
 
 }

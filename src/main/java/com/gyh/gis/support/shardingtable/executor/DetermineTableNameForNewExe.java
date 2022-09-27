@@ -63,9 +63,8 @@ public class DetermineTableNameForNewExe {
         var originTableName = TableInfoHelper.getTableInfo(input.getOriginTableName()).getTableName();
         // 获取表名对应的配置
         TableShardingConfig.ShardingConfig shardingConfig = shardingConfigs.getConfigs().get(originTableName);
+        if (shardingConfig == null) throw new IllegalArgumentException("表名" + originTableName + "没有配置");
         var ctx = new ExecutionContext(input, shardingConfig);
-        //验证参数
-        this.checkCmd(ctx);
         return doExecute(ctx);
     }
 
@@ -73,9 +72,7 @@ public class DetermineTableNameForNewExe {
         try {
             //释放数据库连接，如果有的话
             if (ctx.currentConnection != null) {
-                if (!ctx.currentConnection.isClosed()) {
-                    ctx.currentConnection.close();
-                }
+                DataSourceUtils.releaseConnection(ctx.currentConnection, dataSource);
             }
         } catch (Exception e) {
             log.warn("关闭当前使用的数据库连接发生异常：{}，忽略", e.getMessage());
@@ -252,7 +249,6 @@ public class DetermineTableNameForNewExe {
         if (createTime == null) {
             throw new IllegalArgumentException("createTime不能为空");
         }
-
     }
 
     private DetermineTableNameForNewOutput composeResult(ExecutionContext ctx) {

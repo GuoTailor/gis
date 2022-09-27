@@ -61,7 +61,7 @@ public class GreetingController {
     @GetMapping("/testFy")
     public int testFy() {
         DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
-                .setOriginTableName("test")
+                .setOriginTableName(Test.class)
                 .setCreateTime(LocalDateTime.now()));
         String tableName = execute.getTableName();
         Test test = new Test();

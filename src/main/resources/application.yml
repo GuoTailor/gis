@@ -33,11 +33,13 @@ mybatis-plus:
 gis:
   storage-metadata:
     configs:
-      - sharding-table-max-rows: 1_000_000
+      device_10minute_history:
+        sharding-table-max-rows: 1_000_000
         originTableName: device_10minute_history
         createShardingTableSQLFile: classpath:/device_10minute_history.sql
         policyType: NEVER
-      - sharding-table-max-rows: 1
+      test:
+        sharding-table-max-rows: 1
         originTableName: test
         createShardingTableSQLFile: classpath:/test.sql
         policyType: NEVER

@@ -1,6 +1,8 @@
 package com.gyh.gis.support.shardingtable.executor;
 
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.gyh.gis.config.StorageMetadataTableShardingConfig;
+import com.gyh.gis.support.shardingtable.TableShardingConfig;
 import com.gyh.gis.support.shardingtable.TableShardingPolicyTypeEnum;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
@@ -33,7 +35,7 @@ import java.util.HashMap;
 @Slf4j
 @RequiredArgsConstructor
 public class DetermineTableNameForNewExe {
-    final StorageMetadataTableShardingConfig shardingConfig;
+    final StorageMetadataTableShardingConfig shardingConfigs;
 
     final TableShardingPolicyManager tableShardingPolicyManager;
 
@@ -48,6 +50,7 @@ public class DetermineTableNameForNewExe {
     @RequiredArgsConstructor
     private static class ExecutionContext {
         final DetermineTableNameForNewInput input;
+        final TableShardingConfig.ShardingConfig shardingConfig;
 
         public ShardingTable currentShardingTable;
         public Connection currentConnection;
@@ -56,7 +59,11 @@ public class DetermineTableNameForNewExe {
 
     @Transactional(rollbackFor = Throwable.class)
     public DetermineTableNameForNewOutput execute(DetermineTableNameForNewInput input) {
-        var ctx = new ExecutionContext(input);
+        // 获取原始表名
+        var originTableName = TableInfoHelper.getTableInfo(input.getOriginTableName()).getTableName();
+        // 获取表名对应的配置
+        TableShardingConfig.ShardingConfig shardingConfig = shardingConfigs.getConfigs().get(originTableName);
+        var ctx = new ExecutionContext(input, shardingConfig);
         //验证参数
         this.checkCmd(ctx);
         return doExecute(ctx);
@@ -97,18 +104,18 @@ public class DetermineTableNameForNewExe {
      */
     private void useNewShardingTable(ExecutionContext ctx) {
         var input = ctx.input;
-        var originTableName = shardingConfig.getOriginTableName();
+        var originTableName = ctx.shardingConfig.getOriginTableName();
 
         //统计前一个子表行数
         this.updatePreviousShardingTableRows(ctx);
 
 
         //得到当前应该使用的子表名
-        var shardingTableNameShould = loadPolicy().generateShardingTableName(originTableName, input.getCreateTime());
+        var shardingTableNameShould = loadPolicy(ctx.shardingConfig).generateShardingTableName(originTableName, input.getCreateTime());
 
         //先写入记录
-        ctx.currentShardingTable = recordCurrentShardingTableToDB(shardingTableNameShould);
-        if (shardingConfig.getPolicyType() != TableShardingPolicyTypeEnum.NEVER) {
+        ctx.currentShardingTable = recordCurrentShardingTableToDB(shardingTableNameShould, ctx.shardingConfig);
+        if (ctx.shardingConfig.getPolicyType() != TableShardingPolicyTypeEnum.NEVER) {
             //再创建子表，便于事务回滚
             createSharingTableFromFile(ctx);
         }
@@ -122,9 +129,9 @@ public class DetermineTableNameForNewExe {
      */
     private boolean isShouldUseNewShardingTable(ExecutionContext ctx) {
         var input = ctx.input;
-        var originTableName = shardingConfig.getOriginTableName();
+        var originTableName = ctx.shardingConfig.getOriginTableName();
         //获取当前正在使用的实际的子表
-        var currentShardingTable = shardingTableDao.selectCurrentByOriginTableAndPolicyType(originTableName, shardingConfig.getPolicyType());
+        var currentShardingTable = shardingTableDao.selectCurrentByOriginTableAndPolicyType(originTableName, ctx.shardingConfig.getPolicyType());
         if (currentShardingTable == null) {
             //说明没有任何分表
             return true;
@@ -132,7 +139,7 @@ public class DetermineTableNameForNewExe {
 
         //判断是否下个周期了
         //得到当前应该使用的子表名
-        var shardingTableNameShould = this.loadPolicy().generateShardingTableName(originTableName, input.getCreateTime());
+        var shardingTableNameShould = loadPolicy(ctx.shardingConfig).generateShardingTableName(originTableName, input.getCreateTime());
         //当前使用的子表名不是应该使用的子表开头（可能扩展了）
         if (!currentShardingTable.getTableName().startsWith(shardingTableNameShould)) {
             ctx.previousShardingTable = currentShardingTable;
@@ -151,9 +158,9 @@ public class DetermineTableNameForNewExe {
         //更新之前使用子表总行数
         shardingTableDao.updateRowsById(shardingTable.getId(), shardingTable.getTotalRows());
         //确定子表扩展表名
-        var currentShardingTableName = loadPolicy().generateNextShardingExpandTableName(shardingTable.getTableName());
+        var currentShardingTableName = loadPolicy(ctx.shardingConfig).generateNextShardingExpandTableName(shardingTable.getTableName());
         //记录当前子表
-        ctx.currentShardingTable = recordCurrentShardingTableToDB(currentShardingTableName);
+        ctx.currentShardingTable = recordCurrentShardingTableToDB(currentShardingTableName, ctx.shardingConfig);
         //新建扩展子表
         this.createSharingTableFromFile(ctx);
     }
@@ -163,7 +170,7 @@ public class DetermineTableNameForNewExe {
         //统计子表总记录数
         var maxRows = countTable(loadCurrentConnection(ctx), shardingTable.getTableName());
         shardingTable.setTotalRows(maxRows);
-        return maxRows >= shardingConfig.getShardingTableMaxRows();
+        return maxRows >= ctx.shardingConfig.getShardingTableMaxRows();
     }
 
     private long countTable(Connection connection, String tableName) {
@@ -194,7 +201,7 @@ public class DetermineTableNameForNewExe {
     /**
      * 记录当前分表名
      */
-    private ShardingTable recordCurrentShardingTableToDB(String currentShardingTableName) {
+    private ShardingTable recordCurrentShardingTableToDB(String currentShardingTableName, TableShardingConfig.ShardingConfig shardingConfig) {
         ShardingTable table = new ShardingTable();
         table.setTableName(currentShardingTableName);
         table.setCreateTime(LocalDateTime.now());
@@ -215,7 +222,7 @@ public class DetermineTableNameForNewExe {
     private void createSharingTableFromFile(ExecutionContext ctx) {
         var shardingTable = ctx.currentShardingTable;
 
-        var sqlFileResource = resourcePatternResolver.getResource(shardingConfig.getCreateShardingTableSQLFile());
+        var sqlFileResource = resourcePatternResolver.getResource(ctx.shardingConfig.getCreateShardingTableSQLFile());
         var paramMap = new HashMap<String, Object>(1, 1);
         paramMap.put("${" + shardingTable.getOriginName() + "}", shardingTable.getTableName());
 
@@ -235,7 +242,7 @@ public class DetermineTableNameForNewExe {
 
     }
 
-    private TableShardingPolicy loadPolicy() {
+    private TableShardingPolicy loadPolicy(TableShardingConfig.ShardingConfig shardingConfig) {
         return tableShardingPolicyManager.loadPolicy(shardingConfig.getPolicyType());
     }
 

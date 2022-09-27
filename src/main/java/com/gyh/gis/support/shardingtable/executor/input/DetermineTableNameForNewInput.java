@@ -12,7 +12,7 @@ public class DetermineTableNameForNewInput {
     /**
      * 原表名
      */
-    String originTableName;
+    Class<?> originTableName;
 
 
 }

@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -66,6 +67,19 @@ public class DetermineTableNameForNewExe {
         if (shardingConfig == null) throw new IllegalArgumentException("表名" + originTableName + "没有配置");
         var ctx = new ExecutionContext(input, shardingConfig);
         return doExecute(ctx);
+    }
+
+    /**
+     * 获取所有的表名
+     *
+     * @param domain 实体类
+     * @return 所有的表信息
+     */
+    public List<ShardingTable> getAllSharding(Class<?> domain) {
+        // 获取原始表名
+        var originTableName = TableInfoHelper.getTableInfo(domain).getTableName();
+        TableShardingConfig.ShardingConfig shardingConfig = shardingConfigs.getConfigs().get(originTableName);
+        return shardingTableDao.selectAllShardingByOriginTableAndPolicyType(originTableName, shardingConfig.getPolicyType());
     }
 
     private void finallyReleaseResource(ExecutionContext ctx) {

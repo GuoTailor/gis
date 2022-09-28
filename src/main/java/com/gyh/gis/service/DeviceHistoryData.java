@@ -1,19 +1,20 @@
 package com.gyh.gis.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceDayHistory;
-import com.gyh.gis.domain.Test;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.mapper.Device10minuteHistoryMapper;
 import com.gyh.gis.mapper.DeviceDayHistoryMapper;
 import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
+import com.gyh.gis.support.shardingtable.metadata.ShardingTable;
+import com.gyh.gis.util.AssertUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -69,6 +70,24 @@ public class DeviceHistoryData {
         return minuteHistoryMapper.selectList(wrapper);
     }
 
+    public List<DeviceData> selectByTime(Long id, LocalDateTime startTime, LocalDateTime endTime) {
+        AssertUtils.isTrue(startTime.isBefore(endTime), "结束时间不能早于开始时间");
+        // 如果他们相差小于一天
+        if (startTime.plusDays(1).isAfter(endTime)) {
+            var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
+            if (CollectionUtils.isEmpty(tableSharding)) return List.of();
+            for (ShardingTable shardingTable : tableSharding) {
+
+            }
+        }
+    }
+
+    /**
+     * 添加一个站点的一天的平均流量
+     *
+     * @param dayHistory 节点数据
+     * @return 影响行数
+     */
     public int addDeviceHistoryData(DeviceDayHistory dayHistory) {
         // 获取全局唯一自增id
         long id = dayHistoryMapper.nextId();

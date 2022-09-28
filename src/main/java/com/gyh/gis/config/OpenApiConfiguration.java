@@ -27,11 +27,11 @@ class OpenApiConfiguration {
                 .info(new Info().title("API")
                         .description("api接口文档 ")
                         .version("v0.0.1"))
-                .components(
-                        new Components()
-                                .addSecuritySchemes(
-                                        "Authorization",
-                                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
+                .components(new Components()
+                                .addSecuritySchemes("Authorization", new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
                                 )
                 );
     }

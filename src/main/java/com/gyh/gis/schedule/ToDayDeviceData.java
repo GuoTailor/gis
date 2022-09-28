@@ -37,11 +37,13 @@ public class ToDayDeviceData {
                     .map(Device10minuteHistory::getValue)
                     .mapToDouble(Float::doubleValue)
                     .sum();
+            float flow = (float) sum / device10minuteHistories.size();
             DeviceDayHistory dayHistory = new DeviceDayHistory();
             dayHistory.setTime(date);
-            dayHistory.setValue((float) sum);
+            dayHistory.setValue(flow);
             dayHistory.setStationId(device10minuteHistories.get(0).getStationId());
-            deviceHistoryData.addDeviceHistoryData(dayHistory);
+            int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
+            if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), flow);
         });
     }
 

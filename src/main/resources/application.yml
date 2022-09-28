@@ -38,6 +38,11 @@ gis:
         originTableName: device_10minute_history
         createShardingTableSQLFile: classpath:/device_10minute_history.sql
         policyType: NEVER
+      device_day_history:
+        sharding-table-max-rows: 1_000_000
+        originTableName: device_day_history
+        createShardingTableSQLFile: classpath:/device_day_history.sql
+        policyType: NEVER
       test:
         sharding-table-max-rows: 1
         originTableName: test

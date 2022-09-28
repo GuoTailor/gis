@@ -1,8 +1,8 @@
 package com.gyh.gis.domain;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 /**
  * create by GYH on 2022/9/27
@@ -24,5 +24,5 @@ public class DeviceDayHistory {
     /**
      * 时间
      */
-    private LocalDateTime time;
+    private LocalDate time;
 }

@@ -38,33 +38,33 @@
     </insert>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.DeviceDayHistory">
         <!--@mbg.generated-->
-        insert into device_day_history
+        insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
+            <if test="record.id != null">
                 id,
             </if>
-            <if test="stationId != null">
+            <if test="record.stationId != null">
                 station_id,
             </if>
-            <if test="value != null">
+            <if test="record.value != null">
                 "value",
             </if>
-            <if test="time != null">
+            <if test="record.time != null">
                 "time",
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                #{id,jdbcType=BIGINT},
+            <if test="record.id != null">
+                #{record.id,jdbcType=BIGINT},
             </if>
-            <if test="stationId != null">
-                #{stationId,jdbcType=INTEGER},
+            <if test="record.stationId != null">
+                #{record.stationId,jdbcType=INTEGER},
             </if>
-            <if test="value != null">
-                #{value,jdbcType=REAL},
+            <if test="record.value != null">
+                #{record.value,jdbcType=REAL},
             </if>
-            <if test="time != null">
-                #{time,jdbcType=DATE},
+            <if test="record.time != null">
+                #{record.time,jdbcType=DATE},
             </if>
         </trim>
     </insert>

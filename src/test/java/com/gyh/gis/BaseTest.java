@@ -20,9 +20,15 @@ public class BaseTest {
     @Test
     public void testStream() {
         List<Integer> integers = List.of(1, 2, 3, 5, 6, 7, 8, 9, 10);
-        integers.parallelStream().forEach(it -> {
-            String name = Thread.currentThread().getName();
-            System.out.println(name + " " + it);
-        });
+        integers.parallelStream()
+                .map(it -> {
+                    String name = Thread.currentThread().getName();
+                    System.out.println(name + "--" + it);
+                    return it;
+                })
+                .forEach(it -> {
+                    String name = Thread.currentThread().getName();
+                    System.out.println(name + " " + it);
+                });
     }
 }

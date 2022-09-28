@@ -3,6 +3,7 @@ package com.gyh.gis.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gyh.gis.domain.Device10minuteHistory;
+import com.gyh.gis.domain.DeviceDayHistory;
 import com.gyh.gis.domain.Test;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.mapper.Device10minuteHistoryMapper;
@@ -66,6 +67,18 @@ public class DeviceHistoryData {
                 .between("time", startTime, endTime)
                 .eq("station_id", stationId);
         return minuteHistoryMapper.selectList(wrapper);
+    }
+
+    public int addDeviceHistoryData(DeviceDayHistory dayHistory) {
+        // 获取全局唯一自增id
+        long id = dayHistoryMapper.nextId();
+        dayHistory.setId(id);
+        // 获取分表表名
+        DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
+                .setOriginTableName(DeviceDayHistory.class)
+                .setCreateTime(LocalDateTime.now()));
+        String tableName = execute.getTableName();
+        return dayHistoryMapper.insertSelective(dayHistory, tableName);
     }
 
 }

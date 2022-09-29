@@ -8,14 +8,19 @@
         <version>2.7.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.gyh</groupId>
     <artifactId>gis</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>gis</name>
     <description>gis</description>
+
     <properties>
         <java.version>11</java.version>
+        <snakeyaml.version>1.32</snakeyaml.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,12 +55,6 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.6.11</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.yaml</groupId>
-                    <artifactId>snakeyaml</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>

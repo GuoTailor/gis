@@ -3,10 +3,10 @@ package com.gyh.gis.config;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,4 +41,28 @@ public class OtherConfig {
                 });
     }
 
+    /**
+     * 注入Money、枚举类的序列化反序列化
+     *
+     * @return {@link Module}
+     */
+    @Bean
+    public Module jacksonModule() {
+        SimpleModule module = new SimpleModule();
+
+        module.addDeserializer(Enum.class, new EnumJsonDeserializer());
+        module.addSerializer(Enum.class, new EnumJsonSerializer());
+//        module.addSerializer(BigDecimal.class, new BigDecimalSerializer());
+
+        // 解决List<XyzEnum>类型反序列化的问题
+        module.setDeserializerModifier(new BeanDeserializerModifier() {
+            @Override
+            public JsonDeserializer<?> modifyEnumDeserializer(DeserializationConfig config, JavaType type,
+                                                              BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
+                return new EnumJsonDeserializer(type);
+            }
+        });
+
+        return module;
+    }
 }

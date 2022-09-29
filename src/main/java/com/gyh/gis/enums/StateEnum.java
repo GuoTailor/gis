@@ -1,19 +1,37 @@
 package com.gyh.gis.enums;
 
+import lombok.Getter;
+
 /**
  * create by GYH on 2022/9/26
  */
-public enum StateEnum {
+public enum StateEnum implements Messageable{
     /**
      * 正常
      */
-    NORMAL,
+    NORMAL("正常"),
     /**
      * 异常
      */
-    ERROR,
+    ERROR("异常"),
     /**
      * 警报
      */
-    ALARM
+    ALARM("警报");
+    @Getter
+    final String message;
+
+    StateEnum(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String code() {
+        return name();
+    }
+
+    @Override
+    public String message() {
+        return message;
+    }
 }

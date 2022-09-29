@@ -23,6 +23,13 @@
         from device_day_history
         where id = #{id,jdbcType=BIGINT}
     </select>
+    <select id="selectByTime" resultMap="BaseResultMap">
+        select * from ${tableName}
+        where "time" between #{startTime} and #{endTime} and station_id = #{id}
+    </select>
+    <select id="selectFirst" resultMap="BaseResultMap">
+        select * from ${tableName} where station_id = #{id} order by "time" limit 1
+    </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         <!--@mbg.generated-->
         delete

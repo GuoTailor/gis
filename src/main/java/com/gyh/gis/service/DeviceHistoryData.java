@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -70,16 +71,45 @@ public class DeviceHistoryData {
         return minuteHistoryMapper.selectList(wrapper);
     }
 
-    public List<DeviceData> selectByTime(Long id, LocalDateTime startTime, LocalDateTime endTime) {
+    public List<DeviceData> selectByTime(Integer id, LocalDateTime startTime, LocalDateTime endTime) {
         AssertUtils.isTrue(startTime.isBefore(endTime), "结束时间不能早于开始时间");
+        ArrayList<DeviceData> result = new ArrayList<>();
         // 如果他们相差小于一天
         if (startTime.plusDays(1).isAfter(endTime)) {
             var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
             if (CollectionUtils.isEmpty(tableSharding)) return List.of();
             for (ShardingTable shardingTable : tableSharding) {
-
+                List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectByTime(startTime, endTime, id, shardingTable.getTableName());
+                if (CollectionUtils.isEmpty(deviceData)) continue;
+                deviceData.stream().map(it -> {
+                    DeviceData data = new DeviceData();
+                    BeanUtils.copyProperties(it, data);
+                    return data;
+                }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+                Device10minuteHistory first = minuteHistoryMapper.selectFirst(id, shardingTable.getTableName());
+                if (first == null) continue;
+                // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
+                if (startTime.isAfter(first.getTime())) break;
+            }
+        } else {
+            var tableSharding = determineTableNameForNewExe.getAllSharding(DeviceDayHistory.class);
+            if (CollectionUtils.isEmpty(tableSharding)) return List.of();
+            for (ShardingTable shardingTable : tableSharding) {
+                List<DeviceDayHistory> deviceData = dayHistoryMapper.selectByTime(startTime, endTime, id, shardingTable.getTableName());
+                if (CollectionUtils.isEmpty(deviceData)) continue;
+                deviceData.stream().map(it -> {
+                    DeviceData data = new DeviceData();
+                    BeanUtils.copyProperties(it, data);
+                    data.setTime(it.getTime().atTime(LocalTime.MIN));
+                    return data;
+                }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+                DeviceDayHistory first = dayHistoryMapper.selectFirst(id, shardingTable.getTableName());
+                if (first == null) continue;
+                // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
+                if (startTime.toLocalDate().isAfter(first.getTime())) break;
             }
         }
+        return result;
     }
 
     /**

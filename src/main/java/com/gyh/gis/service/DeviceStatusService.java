@@ -24,6 +24,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * create by GYH on 2022/9/26
@@ -92,25 +95,46 @@ public class DeviceStatusService {
      * @return {@link DeviceStatusResp}
      */
     public DeviceStatusResp getById(Integer id) {
-        DeviceStatus deviceStatus = deviceStatusMapper.selectById(id);
+        DeviceStatus deviceStatus = deviceStatusMapper.selectOne(Wrappers.<DeviceStatus>query().eq("station_id", id));
         AssertUtils.notNull(deviceStatus, "查询不到id为" + id + "的数据");
         DeviceStatusResp resp = new DeviceStatusResp();
         BeanUtils.copyProperties(deviceStatus, resp);
         Station station = stationMapper.selectById(deviceStatus.getStationId());
+        resp.setId(station.getId());
         resp.setStationName(station.getStation());
         resp.setArea(station.getArea());
         resp.setEvaluate(station.getFlow());
         return resp;
     }
 
+    public List<DeviceStatusResp> getAllState() {
+        List<Station> deviceStatuses = stationMapper.selectList(Wrappers.query());
+        Map<Integer, Station> ids = deviceStatuses.stream().collect(Collectors.toMap(Station::getId, it  -> it));
+        List<DeviceStatus> deviceStatusList = deviceStatusMapper.selectList(Wrappers.<DeviceStatus>query().in("station_id", ids.keySet()));
+        return deviceStatusList.stream().map(deviceStatus -> {
+            DeviceStatusResp resp = new DeviceStatusResp();
+            BeanUtils.copyProperties(deviceStatus, resp);
+            Station station = ids.get(deviceStatus.getStationId());
+            resp.setId(deviceStatus.getStationId());
+            resp.setStationName(station.getStation());
+            resp.setArea(station.getArea());
+            resp.setEvaluate(station.getFlow());
+            return resp;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * 取消报警
+     *
+     * @param id 设备id
+     */
     public boolean cancelAlarm(Integer id) {
-        DeviceStatus deviceStatus = deviceStatusMapper.selectById(id);
+        DeviceStatus deviceStatus = deviceStatusMapper.selectOne(Wrappers.<DeviceStatus>query().eq("station_id", id));
         AssertUtils.notNull(deviceStatus, "查询不到id为" + id + "的数据");
-        var set = Wrappers.<DeviceStatus>update().eq("id", id).set("cancel_alarm", true).set("cancel_time", new Date());
+        var set = Wrappers.<DeviceStatus>update().eq("station_id", id).set("cancel_alarm", true).set("cancel_time", new Date());
         int update = deviceStatusMapper.update(null, set);
         return update == 1;
     }
-
 
     public void update(DeviceStatus status) {
         deviceStatusMapper.updateById(status);

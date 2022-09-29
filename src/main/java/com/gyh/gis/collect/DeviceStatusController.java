@@ -34,6 +34,12 @@ public class DeviceStatusController {
         return ResponseInfo.ok(insert);
     }
 
+    @Operation(summary = "获取所有站点的数据")
+    @PostMapping("/getAllState")
+    public ResponseInfo<List<DeviceStatusResp>> getAllState() {
+        return ResponseInfo.ok(deviceStatusService.getAllState());
+    }
+
     @Operation(summary = "获取一个设备状态数据")
     @PostMapping("/getById")
     public ResponseInfo<DeviceStatusResp> getById(@RequestParam("id") Integer id) {

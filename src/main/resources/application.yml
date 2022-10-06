@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
 
 spring:
   main:
@@ -33,7 +33,7 @@ mybatis-plus:
 gis:
   storage-metadata:
     configs:
-      device_10minute_history:
+      device10minute_history:
         sharding-table-max-rows: 1_000_000
         originTableName: device_10minute_history
         createShardingTableSQLFile: classpath:/device_10minute_history.sql

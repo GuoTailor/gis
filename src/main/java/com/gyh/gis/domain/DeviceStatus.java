@@ -4,7 +4,7 @@ import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * create by GYH on 2022/9/26
@@ -31,12 +31,12 @@ public class DeviceStatus {
     /**
      * 异常时间
      */
-    private Date errorTime;
+    private LocalDateTime errorTime;
 
     /**
      * 报警时间
      */
-    private Date alarmTime;
+    private LocalDateTime alarmTime;
 
     /**
      * 报警值
@@ -51,7 +51,7 @@ public class DeviceStatus {
     /**
      * 取消报警时间
      */
-    private Date cancelTime;
+    private LocalDateTime cancelTime;
 
     /**
      * 报警相机截图

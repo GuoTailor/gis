@@ -202,7 +202,7 @@ public class VideoUtil {
                 videoUtil.run(uuid, screenshot);
             });
             t0.start();
-            Thread.sleep(55000);
+            Thread.sleep(15000);
             System.out.println("stop...");
             videoUtil.running.set(false);
         } catch (Throwable t) {

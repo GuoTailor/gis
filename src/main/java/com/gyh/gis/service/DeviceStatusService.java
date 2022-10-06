@@ -1,28 +1,21 @@
 package com.gyh.gis.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.StateEnum;
-import com.gyh.gis.mapper.Device10minuteHistoryMapper;
-import com.gyh.gis.mapper.DeviceDayHistoryMapper;
 import com.gyh.gis.mapper.DeviceStatusMapper;
 import com.gyh.gis.mapper.StationMapper;
-import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
-import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
-import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
 import com.gyh.gis.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +47,7 @@ public class DeviceStatusService {
                 oldDevice.setAlarmValue(req.getAlarmValue());
                 if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
                     oldDevice.setAlarmState(StateEnum.ALARM);
-                    oldDevice.setAlarmTime(new Date());
+                    oldDevice.setAlarmTime(LocalDateTime.now());
                     oldDevice.setCancelAlarm(false);
                     oldDevice.setCancelTime(null);
                     oldDevice.setScreenshotUrl(req.getScreenshotUrl());
@@ -69,7 +62,7 @@ public class DeviceStatusService {
                 BeanUtils.copyProperties(req, deviceStatus);
                 if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
                     deviceStatus.setAlarmState(StateEnum.ALARM);
-                    deviceStatus.setAlarmTime(new Date());
+                    deviceStatus.setAlarmTime(LocalDateTime.now());
                     deviceStatus.setCancelAlarm(false);
                 } else {
                     deviceStatus.setAlarmState(StateEnum.NORMAL);
@@ -109,7 +102,7 @@ public class DeviceStatusService {
 
     public List<DeviceStatusResp> getAllState() {
         List<Station> deviceStatuses = stationMapper.selectList(Wrappers.query());
-        Map<Integer, Station> ids = deviceStatuses.stream().collect(Collectors.toMap(Station::getId, it  -> it));
+        Map<Integer, Station> ids = deviceStatuses.stream().collect(Collectors.toMap(Station::getId, it -> it));
         List<DeviceStatus> deviceStatusList = deviceStatusMapper.selectList(Wrappers.<DeviceStatus>query().in("station_id", ids.keySet()));
         return deviceStatusList.stream().map(deviceStatus -> {
             DeviceStatusResp resp = new DeviceStatusResp();

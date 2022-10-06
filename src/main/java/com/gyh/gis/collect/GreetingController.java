@@ -57,8 +57,8 @@ public class GreetingController {
         return stationService.page();
     }
 
-    @Operation(summary = "testFy")
-    @GetMapping("/testFy")
+    //@Operation(summary = "testFy")
+    //@GetMapping("/testFy")
     public int testFy() {
         DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
                 .setOriginTableName(Test.class)

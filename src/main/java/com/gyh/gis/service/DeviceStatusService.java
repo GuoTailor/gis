@@ -97,6 +97,8 @@ public class DeviceStatusService {
         resp.setStationName(station.getStation());
         resp.setArea(station.getArea());
         resp.setEvaluate(station.getFlow());
+        resp.setLongitude(station.getLongitude());
+        resp.setLatitude(station.getLatitude());
         return resp;
     }
 
@@ -112,6 +114,8 @@ public class DeviceStatusService {
             resp.setStationName(station.getStation());
             resp.setArea(station.getArea());
             resp.setEvaluate(station.getFlow());
+            resp.setLongitude(station.getLongitude());
+            resp.setLatitude(station.getLatitude());
             return resp;
         }).collect(Collectors.toList());
     }

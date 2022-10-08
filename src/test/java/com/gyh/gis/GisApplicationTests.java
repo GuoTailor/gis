@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -30,11 +30,11 @@ class GisApplicationTests {
         req.setStationId(1);
         req.setErrorState(StateEnum.NORMAL);
         req.setAlarmState(StateEnum.ALARM);
-        req.setErrorTime(new Date());
-        req.setAlarmTime(new Date());
+        req.setErrorTime(LocalDateTime.now());
+        req.setAlarmTime(LocalDateTime.now());
         req.setAlarmValue(BigDecimal.valueOf(1.2));
         req.setCancelAlarm(false);
-        req.setCancelTime(new Date());
+        req.setCancelTime(LocalDateTime.now());
         req.setScreenshotUrl("baidu.com");
         Integer insert = deviceStatusService.insert(req);
         log.info("id = {}", insert);

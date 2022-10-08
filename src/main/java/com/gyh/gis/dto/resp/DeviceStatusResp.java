@@ -34,6 +34,18 @@ public class DeviceStatusResp {
     private String area;
 
     /**
+     * 经度
+     */
+    @Schema(description = "经度")
+    private Double longitude;
+
+    /**
+     * 纬度
+     */
+    @Schema(description = "纬度")
+    private Double latitude;
+
+    /**
      * 异常状态
      */
     @Schema(description = "异常状态")

@@ -103,13 +103,14 @@ public class DeviceStatusService {
     }
 
     public List<DeviceStatusResp> getAllState() {
-        List<Station> deviceStatuses = stationMapper.selectList(Wrappers.query());
-        Map<Integer, Station> ids = deviceStatuses.stream().collect(Collectors.toMap(Station::getId, it -> it));
-        List<DeviceStatus> deviceStatusList = deviceStatusMapper.selectList(Wrappers.<DeviceStatus>query().in("station_id", ids.keySet()));
-        return deviceStatusList.stream().map(deviceStatus -> {
+        List<Station> stations = stationMapper.selectList(Wrappers.query());
+        List<Integer> ids = stations.stream().map(Station::getId).collect(Collectors.toList());
+        List<DeviceStatus> deviceStatusList = deviceStatusMapper.selectList(Wrappers.<DeviceStatus>query().in("station_id", ids));
+        Map<Integer, DeviceStatus> cache = deviceStatusList.stream().collect(Collectors.toMap(DeviceStatus::getStationId, it -> it));
+        return stations.stream().map(station -> {
+            DeviceStatus deviceStatus = cache.get(station.getId());
             DeviceStatusResp resp = new DeviceStatusResp();
             BeanUtils.copyProperties(deviceStatus, resp);
-            Station station = ids.get(deviceStatus.getStationId());
             resp.setId(deviceStatus.getStationId());
             resp.setStationName(station.getStation());
             resp.setArea(station.getArea());

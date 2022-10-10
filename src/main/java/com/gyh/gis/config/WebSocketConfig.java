@@ -17,12 +17,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Autowired
     private WebSocketHandler defaultHandler;
     @Autowired
-    private DefaultInterceptor defaultInterceptor;;
+    private DefaultInterceptor defaultInterceptor;
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
                 .addHandler(defaultHandler, "/ws")
                 .addInterceptors(defaultInterceptor)
+                .setAllowedOriginPatterns("*")
                 .setAllowedOrigins("*"); // 解决跨域问题
     }
 }

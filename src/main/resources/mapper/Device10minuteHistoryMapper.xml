@@ -77,7 +77,7 @@
                 screenshot_url = #{record.screenshotUrl,jdbcType=VARCHAR},
             </if>
         </set>
-        where id = #{id,jdbcType=BIGINT}
+        where id = #{record.id,jdbcType=BIGINT}
     </update>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
         insert into ${tableName}

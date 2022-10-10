@@ -1,11 +1,14 @@
 package com.gyh.gis.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceDayHistory;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.dto.resp.DeviceAlarmInfoResp;
+import com.gyh.gis.dto.resp.DeviceAlarmListResp;
+import com.gyh.gis.enums.AlarmStationEnum;
 import com.gyh.gis.enums.StateEnum;
 import com.gyh.gis.mapper.Device10minuteHistoryMapper;
 import com.gyh.gis.mapper.DeviceDayHistoryMapper;
@@ -19,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -26,6 +30,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * create by GYH on 2022/9/27
@@ -119,19 +125,38 @@ public class DeviceHistoryData {
         return result;
     }
 
-    public List<DeviceAlarmInfoResp> selectAllByError(LocalDateTime startTime, LocalDateTime endTime) {
+    public DeviceAlarmListResp selectAllByError(LocalDateTime startTime, LocalDateTime endTime, AlarmStationEnum state, String area) {
+        DeviceAlarmListResp alarmList = new DeviceAlarmListResp();
         ArrayList<DeviceAlarmInfoResp> result = new ArrayList<>();
+        alarmList.setAlarmInfoResps(result);
         var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
-        if (CollectionUtils.isEmpty(tableSharding)) return List.of();
-        List<Station> stations = stationMapper.selectList(Wrappers.query());
+        if (CollectionUtils.isEmpty(tableSharding)) return alarmList;
+        QueryWrapper<Station> wrapper;
+        if (StringUtils.hasLength(area)) {
+            wrapper = Wrappers.<Station>query().eq("area", area);
+        } else {
+            wrapper = Wrappers.query();
+        }
+        List<Station> stations = stationMapper.selectList(wrapper);
+        Map<Integer, Station> collect = stations.stream().collect(Collectors.toMap(Station::getId, it -> it));
         for (ShardingTable shardingTable : tableSharding) {
-            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, shardingTable.getTableName());
+            Boolean cancelAlarm = null;
+            if (state != null) {
+                cancelAlarm = state == AlarmStationEnum.CANCELED;
+            }
+            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, cancelAlarm, shardingTable.getTableName());
             if (CollectionUtils.isEmpty(deviceData)) continue;
             deviceData.stream().map(it -> {
                 DeviceAlarmInfoResp data = new DeviceAlarmInfoResp();
                 BeanUtils.copyProperties(it, data);
                 data.setAlarmValue(it.getValue());
                 data.setAlarmTime(it.getTime());
+                Station station = collect.get(it.getStationId());
+                data.setArea(station.getArea());
+                data.setEvaluate(station.getFlow());
+                data.setStationName(station.getStation());
+                data.setLatitude(station.getLatitude());
+                data.setLongitude(station.getLongitude());
                 return data;
             }).collect(() -> result, ArrayList::add, ArrayList::addAll);
             Device10minuteHistory first = minuteHistoryMapper.selectFirst(null, shardingTable.getTableName());
@@ -139,7 +164,10 @@ public class DeviceHistoryData {
             // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
             if (startTime.isAfter(first.getTime())) break;
         }
-        return result;
+        int count = (int) result.stream().filter(DeviceAlarmInfoResp::getCancelAlarm).count();
+        alarmList.setCanceled(count);
+        alarmList.setAlarm(result.size() - count);
+        return alarmList;
     }
 
     /**

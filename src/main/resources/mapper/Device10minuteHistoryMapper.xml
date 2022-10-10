@@ -47,7 +47,38 @@
         from ${tableName}
         where alarm_state = #{alarmState}
         and "time" between #{startTime} and #{endTime}
+        <if test="cancelAlarm != null">
+            and cancel_alarm = #{cancelAlarm,jdbcType=BOOLEAN}
+        </if>
     </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
+        update ${tableName}
+        <set>
+            <if test="record.stationId != null">
+                station_id = #{record.stationId,jdbcType=INTEGER},
+            </if>
+            <if test="record.value != null">
+                "value" = #{record.value,jdbcType=DECIMAL},
+            </if>
+            <if test="record.time != null">
+                "time" = #{record.time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.alarmState != null">
+                alarm_state = #{record.alarmState,jdbcType=VARCHAR},
+            </if>
+            <if test="record.cancelAlarm != null">
+                cancel_alarm =  #{record.cancelAlarm,jdbcType=BOOLEAN},
+            </if>
+            <if test="record.cancelTime != null">
+                cancel_time = #{record.cancelTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.screenshotUrl != null">
+                screenshot_url = #{record.screenshotUrl,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
         insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">

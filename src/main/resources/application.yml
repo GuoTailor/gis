@@ -16,6 +16,7 @@ spring:
 logging:
   level:
     com.gyh.gis.mapper: DEBUG
+    com.gyh.gis.support.shardingtable.metadata: DEBUG
 
 springdoc:
   swagger-ui:

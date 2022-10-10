@@ -79,7 +79,7 @@ public class DetermineTableNameForNewExe {
         // 获取原始表名
         var originTableName = TableInfoHelper.getTableInfo(domain).getTableName();
         TableShardingConfig.ShardingConfig shardingConfig = shardingConfigs.getConfigs().get(originTableName);
-        return shardingTableDao.selectAllShardingByOriginTableAndPolicyType(originTableName, shardingConfig.getPolicyType());
+        return shardingTableDao.selectAllShardingByOriginTableAndPolicyType(shardingConfig.getOriginTableName(), shardingConfig.getPolicyType());
     }
 
     private void finallyReleaseResource(ExecutionContext ctx) {

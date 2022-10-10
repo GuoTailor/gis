@@ -3,9 +3,12 @@ package com.gyh.gis.collect;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.dto.ResponseInfo;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
+import com.gyh.gis.dto.resp.DeviceAlarmListResp;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
+import com.gyh.gis.enums.AlarmStationEnum;
 import com.gyh.gis.service.DeviceHistoryData;
 import com.gyh.gis.service.DeviceStatusService;
+import com.gyh.gis.service.StationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +29,8 @@ public class DeviceStatusController {
     private DeviceStatusService deviceStatusService;
     @Autowired
     private DeviceHistoryData deviceHistoryData;
+    @Autowired
+    private StationService stationService;
 
     @Operation(summary = "新增一个设备状态数据")
     @PostMapping("/insert")
@@ -55,9 +60,25 @@ public class DeviceStatusController {
         return ResponseInfo.ok(deviceHistoryData.selectByTime(id, startTime, endTime));
     }
 
+    @Operation(summary = "获取所有站点的历史流量数据")
+    @GetMapping("/selectAllByError")
+    public ResponseInfo<DeviceAlarmListResp> selectAllByError(
+            @Parameter(description = "开始时间") @RequestParam("startTime") LocalDateTime startTime,
+            @Parameter(description = "结束时间") @RequestParam("endTime") LocalDateTime endTime,
+            @Parameter(description = "状态") @RequestParam(value = "state", required = false) AlarmStationEnum state,
+            @Parameter(description = "所属流域") @RequestParam(value = "area", required = false) String area) {
+        return ResponseInfo.ok(deviceHistoryData.selectAllByError(startTime, endTime, state, area));
+    }
+
     @Operation(summary = "取消报警")
     @GetMapping("/cancelAlarm")
-    public ResponseInfo<Boolean> cancelAlarm(@RequestParam Integer id) {
+    public ResponseInfo<Boolean> cancelAlarm(@RequestParam Long id) {
         return ResponseInfo.ok(deviceStatusService.cancelAlarm(id));
+    }
+
+    @Operation(summary = "获取所有河流")
+    @GetMapping("/getAllArea")
+    public ResponseInfo<List<String>> getAllArea() {
+        return ResponseInfo.ok(stationService.getAllArea());
     }
 }

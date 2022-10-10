@@ -32,4 +32,13 @@ public class StationService {
         return stationMapper.selectObjs(wrapper).stream().map(it -> (Integer) it).collect(Collectors.toList());
     }
 
+    /**
+     * 获取所有河流
+     *
+     * @return 所有河流
+     */
+    public List<String> getAllArea() {
+        return stationMapper.getAllArea();
+    }
+
 }

@@ -21,4 +21,7 @@
         id, company, "station", area, flow, "location", longitude, latitude, "power", contacts,
         phone
     </sql>
+    <select id="getAllArea" resultType="string">
+        SELECT distinct area FROM "station"
+    </select>
 </mapper>

@@ -14,11 +14,13 @@ import com.gyh.gis.mapper.StationMapper;
 import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
+import com.gyh.gis.support.shardingtable.metadata.ShardingTable;
 import com.gyh.gis.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -146,6 +148,8 @@ public class DeviceStatusService {
                     resp.setAlarmState(StateEnum.NORMAL);
                 }
             }
+            resp.setId(station.getId());
+            resp.setStationId(station.getId());
             resp.setStationName(station.getStation());
             resp.setArea(station.getArea());
             resp.setEvaluate(station.getFlow());
@@ -160,12 +164,17 @@ public class DeviceStatusService {
      *
      * @param id 设备id
      */
-    public boolean cancelAlarm(Integer id) {
-        DeviceStatus deviceStatus = deviceStatusMapper.selectOne(Wrappers.<DeviceStatus>query().eq("station_id", id));
-        AssertUtils.notNull(deviceStatus, "查询不到id为" + id + "的数据");
-        var set = Wrappers.<DeviceStatus>update().eq("station_id", id).set("cancel_alarm", true).set("cancel_time", new Date());
-        int update = deviceStatusMapper.update(null, set);
-        return update == 1;
+    public boolean cancelAlarm(Long id) {
+        var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
+        if (CollectionUtils.isEmpty(tableSharding)) return true;
+        tableSharding.parallelStream().forEach(shardingTable -> {
+            Device10minuteHistory minuteHistory = new Device10minuteHistory();
+            minuteHistory.setId(id);
+            minuteHistory.setCancelAlarm(true);
+            minuteHistory.setCancelTime(LocalDateTime.now());
+            minuteHistoryMapper.updateByPrimaryKeySelective(minuteHistory, shardingTable.getTableName());
+        });
+        return true;
     }
 
     public void update(DeviceStatus status) {

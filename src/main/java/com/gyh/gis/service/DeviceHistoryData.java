@@ -3,9 +3,13 @@ package com.gyh.gis.service;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceDayHistory;
+import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.DeviceData;
+import com.gyh.gis.dto.resp.DeviceAlarmInfoResp;
+import com.gyh.gis.enums.StateEnum;
 import com.gyh.gis.mapper.Device10minuteHistoryMapper;
 import com.gyh.gis.mapper.DeviceDayHistoryMapper;
+import com.gyh.gis.mapper.StationMapper;
 import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
@@ -36,6 +40,9 @@ public class DeviceHistoryData {
 
     @Autowired
     private DetermineTableNameForNewExe determineTableNameForNewExe;
+
+    @Resource
+    private StationMapper stationMapper;
 
     /**
      * 添加一个10分钟节点的数据
@@ -108,6 +115,29 @@ public class DeviceHistoryData {
                 // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
                 if (startTime.toLocalDate().isAfter(first.getTime())) break;
             }
+        }
+        return result;
+    }
+
+    public List<DeviceAlarmInfoResp> selectAllByError(LocalDateTime startTime, LocalDateTime endTime) {
+        ArrayList<DeviceAlarmInfoResp> result = new ArrayList<>();
+        var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
+        if (CollectionUtils.isEmpty(tableSharding)) return List.of();
+        List<Station> stations = stationMapper.selectList(Wrappers.query());
+        for (ShardingTable shardingTable : tableSharding) {
+            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, shardingTable.getTableName());
+            if (CollectionUtils.isEmpty(deviceData)) continue;
+            deviceData.stream().map(it -> {
+                DeviceAlarmInfoResp data = new DeviceAlarmInfoResp();
+                BeanUtils.copyProperties(it, data);
+                data.setAlarmValue(it.getValue());
+                data.setAlarmTime(it.getTime());
+                return data;
+            }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+            Device10minuteHistory first = minuteHistoryMapper.selectFirst(null, shardingTable.getTableName());
+            if (first == null) continue;
+            // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
+            if (startTime.isAfter(first.getTime())) break;
         }
         return result;
     }

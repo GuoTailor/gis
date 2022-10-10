@@ -3,6 +3,7 @@ package com.gyh.gis.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -24,7 +25,7 @@ public class DeviceData {
      * 值
      */
     @Schema(description = "值")
-    private Float value;
+    private BigDecimal value;
 
     /**
      * 时间

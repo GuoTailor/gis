@@ -7,26 +7,18 @@
         <id column="id" jdbcType="INTEGER" property="id"/>
         <result column="station_id" jdbcType="INTEGER" property="stationId"/>
         <result column="error_state" jdbcType="VARCHAR" property="errorState"/>
-        <result column="alarm_state" jdbcType="VARCHAR" property="alarmState"/>
         <result column="error_time" jdbcType="TIMESTAMP" property="errorTime"/>
-        <result column="alarm_time" jdbcType="TIMESTAMP" property="alarmTime"/>
-        <result column="alarm_value" jdbcType="REAL" property="alarmValue"/>
-        <result column="cancel_alarm" jdbcType="BOOLEAN" property="cancelAlarm"/>
-        <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime"/>
-        <result column="screenshot_url" jdbcType="VARCHAR" property="screenshotUrl"/>
+        <result column="time" jdbcType="TIMESTAMP" property="time"/>
+        <result column="value" jdbcType="REAL" property="value"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id,
         station_id,
         error_state,
-        alarm_state,
         error_time,
-        alarm_time,
-        alarm_value,
-        cancel_alarm,
-        cancel_time,
-        screenshot_url
+        "time",
+        "value"
     </sql>
 
 </mapper>

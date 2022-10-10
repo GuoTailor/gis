@@ -32,7 +32,7 @@ class GisApplicationTests {
         req.setAlarmState(StateEnum.ALARM);
         req.setErrorTime(LocalDateTime.now());
         req.setAlarmTime(LocalDateTime.now());
-        req.setAlarmValue(BigDecimal.valueOf(1.2));
+        req.setValue(BigDecimal.valueOf(1.2));
         req.setCancelAlarm(false);
         req.setCancelTime(LocalDateTime.now());
         req.setScreenshotUrl("baidu.com");

@@ -6,46 +6,49 @@
         <!--@Table device_10minute_history-->
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="station_id" jdbcType="INTEGER" property="stationId"/>
-        <result column="value" jdbcType="REAL" property="value"/>
+        <result column="value" jdbcType="DECIMAL" property="value"/>
         <result column="time" jdbcType="TIMESTAMP" property="time"/>
+        <result column="alarm_state" jdbcType="VARCHAR" property="alarmState"/>
+        <result column="cancel_alarm" jdbcType="BOOLEAN" property="cancelAlarm"/>
+        <result column="cancel_time" jdbcType="TIMESTAMP" property="cancelTime"/>
+        <result column="screenshot_url" jdbcType="VARCHAR" property="screenshotUrl"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id,
         station_id,
         "value",
-        "time"
+        "time",
+        alarm_state,
+        cancel_alarm,
+        cancel_time,
+        screenshot_url
     </sql>
-    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        <!--@mbg.generated-->
-        select
-        <include refid="Base_Column_List"/>
-        from device_10minute_history
-        where id = #{id,jdbcType=BIGINT}
-    </select>
     <select id="selectByTime" resultMap="BaseResultMap">
-        select * from ${tableName}
-        where "time" between #{startTime} and #{endTime} and station_id = #{id}
+        select *
+        from ${tableName}
+        where "time" between #{startTime} and #{endTime}
+        <if test="id != null">
+            and station_id = #{id}
+        </if>
     </select>
     <select id="selectFirst" resultMap="BaseResultMap">
-        select * from ${tableName} where station_id = #{id} order by "time" limit 1
+        select *
+        from ${tableName}
+        <if test="id != null">
+            where station_id = #{id}
+        </if>
+        order by "time"
+        limit 1
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-        <!--@mbg.generated-->
-        delete
-        from device_10minute_history
-        where id = #{id,jdbcType=BIGINT}
-    </delete>
-    <insert id="insert" parameterType="com.gyh.gis.domain.Device10minuteHistory">
-        <!--@mbg.generated-->
-        insert into device_10minute_history (id, station_id, "value",
-                                             "time")
-        values (#{id,jdbcType=BIGINT}, #{stationId,jdbcType=INTEGER}, #{value,jdbcType=REAL},
-                #{time,jdbcType=TIMESTAMP})
-    </insert>
+    <select id="selectAllByTime" resultMap="BaseResultMap">
+        select *
+        from ${tableName}
+        where alarm_state = #{alarmState}
+        and "time" between #{startTime} and #{endTime}
+    </select>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
-        <!--@mbg.generated-->
         insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="record.id != null">
@@ -60,6 +63,18 @@
             <if test="record.time != null">
                 "time",
             </if>
+            <if test="record.alarmState != null">
+                "alarm_state",
+            </if>
+            <if test="record.cancelAlarm != null">
+                "cancel_alarm",
+            </if>
+            <if test="record.cancelTime != null">
+                "cancel_time",
+            </if>
+            <if test="record.screenshotUrl != null">
+                "screenshot_url",
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="record.id != null">
@@ -69,37 +84,25 @@
                 #{record.stationId,jdbcType=INTEGER},
             </if>
             <if test="record.value != null">
-                #{record.value,jdbcType=REAL},
+                #{record.value,jdbcType=DECIMAL},
             </if>
             <if test="record.time != null">
                 #{record.time,jdbcType=TIMESTAMP},
             </if>
+            <if test="record.alarmState != null">
+                #{record.alarmState,jdbcType=VARCHAR},
+            </if>
+            <if test="record.cancelAlarm != null">
+                #{record.cancelAlarm,jdbcType=BOOLEAN},
+            </if>
+            <if test="record.cancelTime != null">
+                #{record.cancelTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.screenshotUrl != null">
+                #{record.screenshotUrl,jdbcType=VARCHAR},
+            </if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">
-        <!--@mbg.generated-->
-        update device_10minute_history
-        <set>
-            <if test="stationId != null">
-                station_id = #{stationId,jdbcType=INTEGER},
-            </if>
-            <if test="value != null">
-                "value" = #{value,jdbcType=REAL},
-            </if>
-            <if test="time != null">
-                "time" = #{time,jdbcType=TIMESTAMP},
-            </if>
-        </set>
-        where id = #{id,jdbcType=BIGINT}
-    </update>
-    <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.Device10minuteHistory">
-        <!--@mbg.generated-->
-        update device_10minute_history
-        set station_id = #{stationId,jdbcType=INTEGER},
-            "value"    = #{value,jdbcType=REAL},
-            "time"     = #{time,jdbcType=TIMESTAMP}
-        where id = #{id,jdbcType=BIGINT}
-    </update>
     <select id="nextId" resultType="long">
         select nextval('device_10minute_history_id_seq')
     </select>

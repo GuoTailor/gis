@@ -6,7 +6,7 @@
         <!--@Table device_day_history-->
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="station_id" jdbcType="INTEGER" property="stationId"/>
-        <result column="value" jdbcType="REAL" property="value"/>
+        <result column="value" jdbcType="DECIMAL" property="value"/>
         <result column="time" jdbcType="DATE" property="time"/>
     </resultMap>
     <sql id="Base_Column_List">
@@ -25,10 +25,17 @@
     </select>
     <select id="selectByTime" resultMap="BaseResultMap">
         select * from ${tableName}
-        where "time" between #{startTime} and #{endTime} and station_id = #{id}
+        where "time" between #{startTime} and #{endTime}
+        <if test="id != null">
+            and station_id = #{id}
+        </if>
     </select>
     <select id="selectFirst" resultMap="BaseResultMap">
-        select * from ${tableName} where station_id = #{id} order by "time" limit 1
+        select * from ${tableName}
+        <if test="id != null">
+            where station_id = #{id}
+        </if>
+        order by "time" limit 1
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         <!--@mbg.generated-->
@@ -40,11 +47,10 @@
         <!--@mbg.generated-->
         insert into device_day_history (id, station_id, "value",
                                         "time")
-        values (#{id,jdbcType=BIGINT}, #{stationId,jdbcType=INTEGER}, #{value,jdbcType=REAL},
+        values (#{id,jdbcType=BIGINT}, #{stationId,jdbcType=INTEGER}, #{value,jdbcType=DECIMAL},
                 #{time,jdbcType=DATE})
     </insert>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.DeviceDayHistory">
-        <!--@mbg.generated-->
         insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="record.id != null">
@@ -68,7 +74,7 @@
                 #{record.stationId,jdbcType=INTEGER},
             </if>
             <if test="record.value != null">
-                #{record.value,jdbcType=REAL},
+                #{record.value,jdbcType=DECIMAL},
             </if>
             <if test="record.time != null">
                 #{record.time,jdbcType=DATE},
@@ -83,7 +89,7 @@
                 station_id = #{stationId,jdbcType=INTEGER},
             </if>
             <if test="value != null">
-                "value" = #{value,jdbcType=REAL},
+                "value" = #{value,jdbcType=DECIMAL},
             </if>
             <if test="time != null">
                 "time" = #{time,jdbcType=DATE},
@@ -95,7 +101,7 @@
         <!--@mbg.generated-->
         update device_day_history
         set station_id = #{stationId,jdbcType=INTEGER},
-            "value"    = #{value,jdbcType=REAL},
+            "value"    = #{value,jdbcType=DECIMAL},
             "time"     = #{time,jdbcType=DATE}
         where id = #{id,jdbcType=BIGINT}
     </update>

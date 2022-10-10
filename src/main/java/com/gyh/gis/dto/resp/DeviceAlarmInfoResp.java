@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
  * create by GYH on 2022/9/26
  */
 @Data
-@Schema(description = "设备信息")
-public class DeviceStatusResp {
+@Schema(description = "设备报警信息")
+public class DeviceAlarmInfoResp {
     @Schema(description = "id")
     private Integer id;
     /**
@@ -46,22 +46,10 @@ public class DeviceStatusResp {
     private Double latitude;
 
     /**
-     * 异常状态
-     */
-    @Schema(description = "异常状态")
-    private StateEnum errorState;
-
-    /**
      * 报警状态
      */
     @Schema(description = "报警状态")
     private StateEnum alarmState;
-
-    /**
-     * 异常时间
-     */
-    @Schema(description = "异常时间")
-    private LocalDateTime errorTime;
 
     /**
      * 报警时间
@@ -74,6 +62,24 @@ public class DeviceStatusResp {
      */
     @Schema(description = "报警值")
     private BigDecimal alarmValue;
+
+    /**
+     * 报警相机截图
+     */
+    @Schema(description = "报警相机截图")
+    private String screenshotUrl;
+
+    /**
+     * 是否取消报警
+     */
+    @Schema(description = "是否取消报警")
+    private Boolean cancelAlarm;
+
+    /**
+     * 取消报警时间
+     */
+    @Schema(description = "取消报警时间")
+    private LocalDateTime cancelTime;
 
     /**
      * 标准值

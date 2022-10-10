@@ -2,6 +2,7 @@ package com.gyh.gis.domain;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -19,7 +20,7 @@ public class DeviceDayHistory {
     /**
      * 值
      */
-    private Float value;
+    private BigDecimal value;
 
     /**
      * 时间

@@ -24,37 +24,17 @@ public class DeviceStatus {
     private StateEnum errorState;
 
     /**
-     * 报警状态
-     */
-    private StateEnum alarmState;
-
-    /**
      * 异常时间
      */
     private LocalDateTime errorTime;
 
     /**
-     * 报警时间
+     * 上传时间
      */
-    private LocalDateTime alarmTime;
+    private LocalDateTime time;
 
     /**
-     * 报警值
+     * 当前值
      */
-    private BigDecimal alarmValue;
-
-    /**
-     * 是否取消报警
-     */
-    private Boolean cancelAlarm;
-
-    /**
-     * 取消报警时间
-     */
-    private LocalDateTime cancelTime;
-
-    /**
-     * 报警相机截图
-     */
-    private String screenshotUrl;
+    private BigDecimal value;
 }

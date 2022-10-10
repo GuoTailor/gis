@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,12 +34,11 @@ public class ToDayDeviceData {
         stationIds.parallelStream().forEach(it -> {
             var device10minuteHistories = deviceHistoryData.selectByOneDay(date, it);
             if (CollectionUtils.isEmpty(device10minuteHistories)) return;
-            double sum = device10minuteHistories
+            BigDecimal sum = device10minuteHistories
                     .stream()
                     .map(Device10minuteHistory::getValue)
-                    .mapToDouble(Float::doubleValue)
-                    .sum();
-            float flow = (float) sum / device10minuteHistories.size();
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
             DeviceDayHistory dayHistory = new DeviceDayHistory();
             dayHistory.setTime(date);
             dayHistory.setValue(flow);

@@ -2,16 +2,22 @@ package com.gyh.gis.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.StateEnum;
+import com.gyh.gis.mapper.Device10minuteHistoryMapper;
 import com.gyh.gis.mapper.DeviceStatusMapper;
 import com.gyh.gis.mapper.StationMapper;
+import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
+import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
+import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
 import com.gyh.gis.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +37,10 @@ public class DeviceStatusService {
     private DeviceStatusMapper deviceStatusMapper;
     @Resource
     private StationMapper stationMapper;
+    @Autowired
+    private DetermineTableNameForNewExe determineTableNameForNewExe;
+    @Resource
+    private Device10minuteHistoryMapper minuteHistoryMapper;
 
     /**
      * 有就更新，没有就新增
@@ -39,38 +49,53 @@ public class DeviceStatusService {
         QueryWrapper<DeviceStatus> wrapper = Wrappers.<DeviceStatus>query().eq("station_id", req.getStationId());
         Station station = stationMapper.selectById(req.getStationId());
         AssertUtils.notNull(station, "站点信息不存在", req.getStationId());
-        // TODO 保存历史数据
         // 保存最新数据
         synchronized (DeviceStatusService.class) {
             DeviceStatus oldDevice = deviceStatusMapper.selectOne(wrapper);
             if (oldDevice != null) {
-                oldDevice.setAlarmValue(req.getAlarmValue());
-                if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
-                    oldDevice.setAlarmState(StateEnum.ALARM);
-                    oldDevice.setAlarmTime(LocalDateTime.now());
-                    oldDevice.setCancelAlarm(false);
-                    oldDevice.setCancelTime(null);
-                    oldDevice.setScreenshotUrl(req.getScreenshotUrl());
-                } else {
-                    oldDevice.setAlarmState(StateEnum.NORMAL);
-                    oldDevice.setCancelAlarm(true);
-                    oldDevice.setScreenshotUrl(null);
+                oldDevice.setTime(LocalDateTime.now());
+                oldDevice.setValue(req.getValue());
+                oldDevice.setErrorState(req.getErrorState());
+                if (StateEnum.ERROR == req.getErrorState()) {
+                    oldDevice.setErrorTime(LocalDateTime.now());
+                } else if (StateEnum.NORMAL == req.getErrorState()) {
+                    oldDevice.setErrorTime(null);
                 }
-                return deviceStatusMapper.updateById(oldDevice);
+                deviceStatusMapper.updateById(oldDevice);
             } else {
                 DeviceStatus deviceStatus = new DeviceStatus();
-                BeanUtils.copyProperties(req, deviceStatus);
-                if (station.getFlow().compareTo(req.getAlarmValue()) <= 0) {
-                    deviceStatus.setAlarmState(StateEnum.ALARM);
-                    deviceStatus.setAlarmTime(LocalDateTime.now());
-                    deviceStatus.setCancelAlarm(false);
-                } else {
-                    deviceStatus.setAlarmState(StateEnum.NORMAL);
-                    deviceStatus.setCancelAlarm(true);
+                deviceStatus.setStationId(req.getStationId());
+                deviceStatus.setErrorState(req.getErrorState());
+                deviceStatus.setTime(LocalDateTime.now());
+                deviceStatus.setValue(req.getValue());
+                if (StateEnum.ERROR == req.getErrorState()){
+                    deviceStatus.setErrorTime(LocalDateTime.now());
+                } else if (StateEnum.NORMAL == req.getErrorState()) {
+                    deviceStatus.setErrorTime(null);
                 }
-                return deviceStatusMapper.insert(deviceStatus);
+                deviceStatusMapper.insert(deviceStatus);
             }
         }
+        DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
+                .setOriginTableName(Device10minuteHistory.class));
+        Device10minuteHistory minuteHistory = new Device10minuteHistory();
+        // 获取全局唯一自增id
+        var id = minuteHistoryMapper.nextId();
+        minuteHistory.setId(id);
+        minuteHistory.setStationId(req.getStationId());
+        minuteHistory.setValue(req.getValue());
+        minuteHistory.setTime(LocalDateTime.now());
+        if (station.getFlow().compareTo(req.getValue()) <= 0) {
+            minuteHistory.setAlarmState(StateEnum.ALARM);
+            minuteHistory.setCancelAlarm(false);
+            minuteHistory.setCancelTime(null);
+            minuteHistory.setScreenshotUrl(req.getScreenshotUrl());
+        } else {
+            minuteHistory.setAlarmState(StateEnum.NORMAL);
+            minuteHistory.setCancelAlarm(true);
+            minuteHistory.setScreenshotUrl(null);
+        }
+        return minuteHistoryMapper.insertSelective(minuteHistory, execute.getTableName());
     }
 
     public Integer insert(DeviceStatusInsertReq req) {
@@ -110,8 +135,17 @@ public class DeviceStatusService {
         return stations.stream().map(station -> {
             DeviceStatus deviceStatus = cache.get(station.getId());
             DeviceStatusResp resp = new DeviceStatusResp();
-            BeanUtils.copyProperties(deviceStatus, resp);
-            resp.setId(deviceStatus.getStationId());
+            if (deviceStatus != null) {
+                BeanUtils.copyProperties(deviceStatus, resp);
+                resp.setId(deviceStatus.getStationId());
+                resp.setAlarmValue(deviceStatus.getValue());
+                resp.setAlarmTime(deviceStatus.getTime());
+                if (deviceStatus.getValue().compareTo(station.getFlow()) >= 0) {
+                   resp.setAlarmState(StateEnum.ALARM);
+                } else {
+                    resp.setAlarmState(StateEnum.NORMAL);
+                }
+            }
             resp.setStationName(station.getStation());
             resp.setArea(station.getArea());
             resp.setEvaluate(station.getFlow());

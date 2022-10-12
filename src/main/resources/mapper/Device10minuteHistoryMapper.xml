@@ -50,6 +50,12 @@
         <if test="cancelAlarm != null">
             and cancel_alarm = #{cancelAlarm,jdbcType=BOOLEAN}
         </if>
+        <if test="stationIds != null and stationIds.size() != 0">
+            and station_id in
+            <foreach collection="stationIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
     <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.Device10minuteHistory">

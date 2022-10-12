@@ -144,7 +144,7 @@ public class DeviceHistoryData {
             if (state != null) {
                 cancelAlarm = state == AlarmStationEnum.CANCELED;
             }
-            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, cancelAlarm, shardingTable.getTableName());
+            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, cancelAlarm, collect.keySet(), shardingTable.getTableName());
             if (CollectionUtils.isEmpty(deviceData)) continue;
             deviceData.stream().map(it -> {
                 DeviceAlarmInfoResp data = new DeviceAlarmInfoResp();

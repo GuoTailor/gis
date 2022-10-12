@@ -6,6 +6,7 @@ import com.gyh.gis.enums.StateEnum;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public interface Device10minuteHistoryMapper extends BaseMapper<Device10minuteHi
                                                 @Param("endTime")LocalDateTime endTime,
                                                 @Param("alarmState") StateEnum alarmState,
                                                 @Param("cancelAlarm") Boolean cancelAlarm,
+                                                @Param("stationIds") Collection<Integer> stationIds,
                                                 @Param("tableName") String tableName);
 
     Device10minuteHistory selectFirst(@Param("id") Integer id, @Param("tableName") String tableName);

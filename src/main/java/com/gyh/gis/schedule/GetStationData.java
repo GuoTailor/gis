@@ -29,21 +29,24 @@ public class GetStationData {
     @Autowired
     private DeviceStatusService deviceStatusService;
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void getData() {
         List<Station> stations = stationService.getAll();
         stations.parallelStream()
                 .filter(it -> StringUtils.hasLength(it.getIp()) && it.getPort() != null)
                 .forEach(it -> {
-                    if (nettyClient.exist(it.getIp(), it.getPort())) {
+                    if (!nettyClient.exist(it.getIp(), it.getPort())) {
                         try {
-                            nettyClient.connect(it.getIp(), it.getPort(), request -> saveData(false, request, it));
+                            nettyClient.connect(it.getIp(), it.getPort(),
+                                    request -> saveData(false, request, it),
+                                    request -> nettyClient.sendAsyncGainValue(it.getIp(), it.getPort()));
                         } catch (Exception e) {
                             saveData(true, null, it);
                             e.printStackTrace();
                         }
+                    } else {
+                        nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
                     }
-                    nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
                 });
     }
 

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -69,7 +70,11 @@ public class DeviceStatusService {
                 deviceStatus.setStationId(req.getStationId());
                 deviceStatus.setErrorState(req.getErrorState());
                 deviceStatus.setTime(LocalDateTime.now());
-                deviceStatus.setValue(req.getValue());
+                if (req.getValue() != null) {
+                    deviceStatus.setValue(req.getValue());
+                } else {
+                    deviceStatus.setValue(BigDecimal.ZERO);
+                }
                 if (StateEnum.ERROR == req.getErrorState()){
                     deviceStatus.setErrorTime(LocalDateTime.now());
                 } else if (StateEnum.NORMAL == req.getErrorState()) {
@@ -78,26 +83,29 @@ public class DeviceStatusService {
                 deviceStatusMapper.insert(deviceStatus);
             }
         }
-        DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
-                .setOriginTableName(Device10minuteHistory.class));
-        Device10minuteHistory minuteHistory = new Device10minuteHistory();
-        // 获取全局唯一自增id
-        var id = minuteHistoryMapper.nextId();
-        minuteHistory.setId(id);
-        minuteHistory.setStationId(req.getStationId());
-        minuteHistory.setValue(req.getValue());
-        minuteHistory.setTime(LocalDateTime.now());
-        if (station.getFlow().compareTo(req.getValue()) <= 0) {
-            minuteHistory.setAlarmState(StateEnum.ALARM);
-            minuteHistory.setCancelAlarm(false);
-            minuteHistory.setCancelTime(null);
-            minuteHistory.setScreenshotUrl(req.getScreenshotUrl());
-        } else {
-            minuteHistory.setAlarmState(StateEnum.NORMAL);
-            minuteHistory.setCancelAlarm(true);
-            minuteHistory.setScreenshotUrl(null);
+        if (req.getValue() != null) {
+            DetermineTableNameForNewOutput execute = determineTableNameForNewExe.execute(new DetermineTableNameForNewInput()
+                    .setOriginTableName(Device10minuteHistory.class));
+            Device10minuteHistory minuteHistory = new Device10minuteHistory();
+            // 获取全局唯一自增id
+            var id = minuteHistoryMapper.nextId();
+            minuteHistory.setId(id);
+            minuteHistory.setStationId(req.getStationId());
+            minuteHistory.setValue(req.getValue());
+            minuteHistory.setTime(LocalDateTime.now());
+            if (station.getFlow().compareTo(req.getValue()) <= 0) {
+                minuteHistory.setAlarmState(StateEnum.ALARM);
+                minuteHistory.setCancelAlarm(false);
+                minuteHistory.setCancelTime(null);
+                minuteHistory.setScreenshotUrl(req.getScreenshotUrl());
+            } else {
+                minuteHistory.setAlarmState(StateEnum.NORMAL);
+                minuteHistory.setCancelAlarm(true);
+                minuteHistory.setScreenshotUrl(null);
+            }
+            return minuteHistoryMapper.insertSelective(minuteHistory, execute.getTableName());
         }
-        return minuteHistoryMapper.insertSelective(minuteHistory, execute.getTableName());
+        return 1;
     }
 
     public Integer insert(DeviceStatusInsertReq req) {

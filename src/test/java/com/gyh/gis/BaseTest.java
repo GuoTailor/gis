@@ -2,6 +2,8 @@ package com.gyh.gis;
 
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -41,5 +43,12 @@ public class BaseTest {
             data = (data << 8) + body[ i];
         }
         System.out.println(data);
+    }
+
+    @Test
+    public void testTime2() throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println(df.parse("2022-10-12 11:20:27").getTime());
+        System.out.println(df.parse("2022-10-12 13:00:51").getTime());
     }
 }

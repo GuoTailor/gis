@@ -38,6 +38,19 @@ public class NettyClient {
         return serverHandler;
     }
 
+
+    public NettyServerHandler connect(String ip, int port, MessageListener onMessage, MessageListener onConnect) throws InterruptedException {
+        NettyServerHandler serverHandler = initializer.getServerHandler();
+        bootstrap.connect(ip, port)
+                .sync()
+                .addListener(it -> {
+                    initializer.getServerHandler().addListener(ip + decollator + port, onMessage);
+                    onMessage.onMessage(null);
+                })
+                .channel();
+        return serverHandler;
+    }
+
     /**
      * 查看是否已经连接过
      *

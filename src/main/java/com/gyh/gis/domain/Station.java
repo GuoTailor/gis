@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import lombok.Data;
 
 /**
- * create by GYH on 2022/9/22
+ * create by GYH on 2022/10/12
  */
 @Data
 public class Station {
@@ -59,4 +59,19 @@ public class Station {
      * 联系方式
      */
     private String phone;
+
+    /**
+     * ip地址
+     */
+    private String ip;
+
+    /**
+     * 端口
+     */
+    private Integer port;
+
+    /**
+     * 流量范围
+     */
+    private Float range;
 }

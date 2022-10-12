@@ -15,11 +15,26 @@
         <result column="power" jdbcType="VARCHAR" property="power"/>
         <result column="contacts" jdbcType="VARCHAR" property="contacts"/>
         <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="ip" jdbcType="VARCHAR" property="ip"/>
+        <result column="port" jdbcType="INTEGER" property="port"/>
+        <result column="range" jdbcType="REAL" property="range"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, company, "station", area, flow, "location", longitude, latitude, "power", contacts,
-        phone
+        id,
+        company,
+        "station",
+        area,
+        flow,
+        "location",
+        longitude,
+        latitude,
+        "power",
+        contacts,
+        phone,
+        ip,
+        port,
+        "range"
     </sql>
     <select id="getAllArea" resultType="string">
         SELECT distinct area FROM "station"

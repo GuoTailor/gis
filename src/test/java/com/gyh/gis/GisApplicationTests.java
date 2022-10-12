@@ -29,12 +29,7 @@ class GisApplicationTests {
         DeviceStatusInsertReq req = new DeviceStatusInsertReq();
         req.setStationId(1);
         req.setErrorState(StateEnum.NORMAL);
-        req.setAlarmState(StateEnum.ALARM);
-        req.setErrorTime(LocalDateTime.now());
-        req.setAlarmTime(LocalDateTime.now());
         req.setValue(BigDecimal.valueOf(1.2));
-        req.setCancelAlarm(false);
-        req.setCancelTime(LocalDateTime.now());
         req.setScreenshotUrl("baidu.com");
         Integer insert = deviceStatusService.insert(req);
         log.info("id = {}", insert);
@@ -43,16 +38,13 @@ class GisApplicationTests {
 
         DeviceStatus deviceStatus = new DeviceStatus();
         BeanUtils.copyProperties(byId, deviceStatus);
-        deviceStatus.setCancelAlarm(null);
-        deviceStatus.setScreenshotUrl(null);
         deviceStatusService.update(deviceStatus);
     }
 
     @Test
     public void testSelect() {
-        List<Integer> objects = stationService.selectAll();
+        List<Integer> objects = stationService.selectAllId();
         System.out.println(objects);
         System.out.println(objects.get(0).getClass().getName());
     }
-
 }

@@ -30,7 +30,7 @@ public class ToDayDeviceData {
     private void configureTasks() {
         var date = LocalDate.now().minusDays(1);
         log.info("开始统计 {} 每个站点流量", date);
-        List<Integer> stationIds = stationService.selectAll();
+        List<Integer> stationIds = stationService.selectAllId();
         stationIds.parallelStream().forEach(it -> {
             var device10minuteHistories = deviceHistoryData.selectByOneDay(date, it);
             if (CollectionUtils.isEmpty(device10minuteHistories)) return;

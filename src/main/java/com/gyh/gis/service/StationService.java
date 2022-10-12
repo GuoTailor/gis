@@ -27,9 +27,14 @@ public class StationService {
         return stationMapper.selectPage(page, query);
     }
 
-    public List<Integer> selectAll() {
+    public List<Integer> selectAllId() {
         var wrapper = Wrappers.<Station>query().select("id");
         return stationMapper.selectObjs(wrapper).stream().map(it -> (Integer) it).collect(Collectors.toList());
+    }
+
+    public List<Station> getAll() {
+        var wrapper = Wrappers.<Station>query();
+        return stationMapper.selectList(wrapper);
     }
 
     /**

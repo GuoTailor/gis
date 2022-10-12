@@ -31,4 +31,15 @@ public class BaseTest {
                     System.out.println(name + " " + it);
                 });
     }
+
+    @Test
+    public void testBase() {
+        byte[] body = new byte[]{0x02, 0x06, 0x6A};
+        int length = body[0];
+        int data = 0;
+        for (int i = 1; i <= length; i++) {
+            data = (data << 8) + body[ i];
+        }
+        System.out.println(data);
+    }
 }

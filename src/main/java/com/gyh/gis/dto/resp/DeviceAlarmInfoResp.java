@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Schema(description = "设备报警信息")
 public class DeviceAlarmInfoResp {
     @Schema(description = "id")
-    private Integer id;
+    private Long id;
     /**
      * 站点id
      */

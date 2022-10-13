@@ -60,7 +60,7 @@ public class DeviceStatusController {
         return ResponseInfo.ok(deviceHistoryData.selectByTime(id, startTime, endTime));
     }
 
-    @Operation(summary = "获取所有站点的历史流量数据")
+    @Operation(summary = "获取所有站点的历史流量报警数据")
     @GetMapping("/selectAllByError")
     public ResponseInfo<DeviceAlarmListResp> selectAllByError(
             @Parameter(description = "开始时间") @RequestParam("startTime") LocalDateTime startTime,

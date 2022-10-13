@@ -125,6 +125,14 @@ public class DeviceHistoryData {
         return result;
     }
 
+    /**
+     * 获取历史报警数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param state     站点
+     * @param area      流域
+     */
     public DeviceAlarmListResp selectAllByError(LocalDateTime startTime, LocalDateTime endTime, AlarmStationEnum state, String area) {
         DeviceAlarmListResp alarmList = new DeviceAlarmListResp();
         ArrayList<DeviceAlarmInfoResp> result = new ArrayList<>();

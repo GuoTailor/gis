@@ -93,7 +93,7 @@ public class DeviceStatusService {
             minuteHistory.setStationId(req.getStationId());
             minuteHistory.setValue(req.getValue());
             minuteHistory.setTime(LocalDateTime.now());
-            if (station.getFlow().compareTo(req.getValue()) <= 0) {
+            if (station.getFlow().compareTo(req.getValue()) >= 0) {
                 minuteHistory.setAlarmState(StateEnum.ALARM);
                 minuteHistory.setCancelAlarm(false);
                 minuteHistory.setCancelTime(null);
@@ -150,7 +150,7 @@ public class DeviceStatusService {
                 resp.setId(deviceStatus.getStationId());
                 resp.setAlarmValue(deviceStatus.getValue());
                 resp.setAlarmTime(deviceStatus.getTime());
-                if (deviceStatus.getValue().compareTo(station.getFlow()) >= 0) {
+                if (deviceStatus.getValue().compareTo(station.getFlow()) <= 0) {
                    resp.setAlarmState(StateEnum.ALARM);
                 } else {
                     resp.setAlarmState(StateEnum.NORMAL);

@@ -45,7 +45,7 @@ public class NettyClient {
                 .sync()
                 .addListener(it -> {
                     initializer.getServerHandler().addListener(ip + decollator + port, onMessage);
-                    onMessage.onMessage(null);
+                    onConnect.onMessage(null);
                 })
                 .channel();
         return serverHandler;

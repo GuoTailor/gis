@@ -173,6 +173,7 @@ public class DeviceHistoryData {
             if (startTime.isAfter(first.getTime())) break;
         }
         int count = (int) result.stream().filter(DeviceAlarmInfoResp::getCancelAlarm).count();
+        result.sort((o1, o2) -> o2.getAlarmTime().compareTo(o1.getAlarmTime()));
         alarmList.setCanceled(count);
         alarmList.setAlarm(result.size() - count);
         return alarmList;

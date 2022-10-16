@@ -60,7 +60,7 @@ public class GetStationData {
             for (int i = 1; i <= length; i++) {
                 data = (data << 8) + body[8 + i];
             }
-            double flow = (data * 0.001 - 4) / 16 * station.getFlow().doubleValue();
+            double flow = (data * 0.001 - 4) / 16 * station.getRange().doubleValue();
             req.setErrorState(StateEnum.NORMAL);
             req.setValue(new BigDecimal(flow));
         } else {

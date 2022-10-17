@@ -1,5 +1,6 @@
 package com.gyh.gis.domain;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
  * create by GYH on 2022/9/27
  */
 @Data
+@TableName(value = "device_10minute_history")
 public class Device10minuteHistory {
     private Long id;
 

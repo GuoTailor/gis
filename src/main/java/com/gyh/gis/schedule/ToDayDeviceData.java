@@ -27,7 +27,7 @@ public class ToDayDeviceData {
     private DeviceHistoryData deviceHistoryData;
 
     @Scheduled(cron = "1 0 0 * * ?")
-    private void configureTasks() {
+    public void configureTasks() {
         var date = LocalDate.now().minusDays(1);
         log.info("开始统计 {} 每个站点流量", date);
         List<Integer> stationIds = stationService.selectAllId();

@@ -4,6 +4,7 @@ import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.StateEnum;
+import com.gyh.gis.schedule.ToDayDeviceData;
 import com.gyh.gis.service.DeviceStatusService;
 import com.gyh.gis.service.StationService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ class GisApplicationTests {
     private DeviceStatusService deviceStatusService;
     @Autowired
     private StationService stationService;
+    @Autowired
+    private ToDayDeviceData toDayDeviceData;
 
     @Test
     void contextLoads() {
@@ -46,5 +49,10 @@ class GisApplicationTests {
         List<Integer> objects = stationService.selectAllId();
         System.out.println(objects);
         System.out.println(objects.get(0).getClass().getName());
+    }
+
+    @Test
+    public void testCount() {
+        toDayDeviceData.configureTasks();
     }
 }

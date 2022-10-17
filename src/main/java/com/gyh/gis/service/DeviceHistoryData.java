@@ -78,10 +78,19 @@ public class DeviceHistoryData {
     public List<Device10minuteHistory> selectByOneDay(LocalDate time, Integer stationId) {
         var startTime = time.atStartOfDay();
         var endTime = time.atTime(LocalTime.MAX);
-        var wrapper = Wrappers.<Device10minuteHistory>query()
-                .between("time", startTime, endTime)
-                .eq("station_id", stationId);
-        return minuteHistoryMapper.selectList(wrapper);
+        var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
+        if (CollectionUtils.isEmpty(tableSharding)) return List.of();
+        ArrayList<Device10minuteHistory> result = new ArrayList<>();
+        for (ShardingTable shardingTable : tableSharding) {
+            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectByTime(startTime, endTime, stationId, shardingTable.getTableName());
+            if (CollectionUtils.isEmpty(deviceData)) continue;
+            result.addAll(deviceData);
+            Device10minuteHistory first = minuteHistoryMapper.selectFirst(stationId, shardingTable.getTableName());
+            if (first == null) continue;
+            // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
+            if (startTime.isAfter(first.getTime())) break;
+        }
+        return result;
     }
 
     public List<DeviceData> selectByTime(Integer id, LocalDateTime startTime, LocalDateTime endTime) {

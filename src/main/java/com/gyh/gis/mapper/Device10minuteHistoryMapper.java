@@ -18,7 +18,10 @@ public interface Device10minuteHistoryMapper extends BaseMapper<Device10minuteHi
 
     int updateByPrimaryKeySelective(@Param("record") Device10minuteHistory record, @Param("tableName") String tableName);
 
-    List<Device10minuteHistory> selectByTime(@Param("startTime")LocalDateTime startTime, @Param("endTime")LocalDateTime endTime, @Param("id") Integer id, @Param("tableName") String tableName);
+    List<Device10minuteHistory> selectByTime(@Param("startTime")LocalDateTime startTime,
+                                             @Param("endTime")LocalDateTime endTime,
+                                             @Param("id") Integer id,
+                                             @Param("tableName") String tableName);
 
     List<Device10minuteHistory> selectAllByTime(@Param("startTime")LocalDateTime startTime,
                                                 @Param("endTime")LocalDateTime endTime,

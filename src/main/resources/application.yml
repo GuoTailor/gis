@@ -17,6 +17,12 @@ logging:
   level:
     com.gyh.gis.mapper: DEBUG
     com.gyh.gis.support.shardingtable.metadata: DEBUG
+  file:
+    path: ./log
+  logback:
+    rolling policy:
+      max-history: 7
+      max-file-size: 100MB
 
 springdoc:
   swagger-ui:

@@ -84,7 +84,7 @@ public class DeviceAlarmInfoResp {
     /**
      * 标准值
      */
-    @Schema(description = " 标准值")
+    @Schema(description = "标准值")
     private BigDecimal evaluate;
 
 }

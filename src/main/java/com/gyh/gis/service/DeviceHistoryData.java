@@ -137,20 +137,20 @@ public class DeviceHistoryData {
     /**
      * 获取历史报警数据
      *
-     * @param startTime 开始时间
-     * @param endTime   结束时间
-     * @param state     站点
-     * @param area      流域
+     * @param startTime   开始时间
+     * @param endTime     结束时间
+     * @param state       站点
+     * @param stationName 站名
      */
-    public DeviceAlarmListResp selectAllByError(LocalDateTime startTime, LocalDateTime endTime, AlarmStationEnum state, String area) {
+    public DeviceAlarmListResp selectAllByError(LocalDateTime startTime, LocalDateTime endTime, AlarmStationEnum state, String stationName) {
         DeviceAlarmListResp alarmList = new DeviceAlarmListResp();
         ArrayList<DeviceAlarmInfoResp> result = new ArrayList<>();
         alarmList.setAlarmInfoResps(result);
         var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
         if (CollectionUtils.isEmpty(tableSharding)) return alarmList;
         QueryWrapper<Station> wrapper;
-        if (StringUtils.hasLength(area)) {
-            wrapper = Wrappers.<Station>query().eq("area", area);
+        if (StringUtils.hasLength(stationName)) {
+            wrapper = Wrappers.<Station>query().eq("station", stationName);
         } else {
             wrapper = Wrappers.query();
         }

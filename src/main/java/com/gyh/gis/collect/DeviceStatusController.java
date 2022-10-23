@@ -66,8 +66,8 @@ public class DeviceStatusController {
             @Parameter(description = "开始时间") @RequestParam("startTime") LocalDateTime startTime,
             @Parameter(description = "结束时间") @RequestParam("endTime") LocalDateTime endTime,
             @Parameter(description = "状态") @RequestParam(value = "state", required = false) AlarmStationEnum state,
-            @Parameter(description = "所属流域") @RequestParam(value = "area", required = false) String area) {
-        return ResponseInfo.ok(deviceHistoryData.selectAllByError(startTime, endTime, state, area));
+            @Parameter(description = "站点") @RequestParam(value = "station", required = false) String station) {
+        return ResponseInfo.ok(deviceHistoryData.selectAllByError(startTime, endTime, state, station));
     }
 
     @Operation(summary = "取消报警")

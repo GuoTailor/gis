@@ -96,6 +96,7 @@ public class DeviceHistoryData {
     public List<DeviceData> selectByTime(Integer id, LocalDateTime startTime, LocalDateTime endTime) {
         AssertUtils.isTrue(startTime.isBefore(endTime), "结束时间不能早于开始时间");
         ArrayList<DeviceData> result = new ArrayList<>();
+        Station station = stationMapper.selectById(id);
         // 如果他们相差小于一天
         if (startTime.plusDays(1).isAfter(endTime)) {
             var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
@@ -106,6 +107,7 @@ public class DeviceHistoryData {
                 deviceData.stream().map(it -> {
                     DeviceData data = new DeviceData();
                     BeanUtils.copyProperties(it, data);
+                    data.setFlow(station.getFlow());
                     return data;
                 }).collect(() -> result, ArrayList::add, ArrayList::addAll);
                 Device10minuteHistory first = minuteHistoryMapper.selectFirst(id, shardingTable.getTableName());
@@ -122,6 +124,7 @@ public class DeviceHistoryData {
                 deviceData.stream().map(it -> {
                     DeviceData data = new DeviceData();
                     BeanUtils.copyProperties(it, data);
+                    data.setFlow(station.getFlow());
                     data.setTime(it.getTime().atTime(LocalTime.MIN));
                     return data;
                 }).collect(() -> result, ArrayList::add, ArrayList::addAll);

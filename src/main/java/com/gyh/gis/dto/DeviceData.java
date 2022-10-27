@@ -28,6 +28,12 @@ public class DeviceData {
     private BigDecimal value;
 
     /**
+     * 核定流量
+     */
+    @Schema(description = "核定流量")
+    private BigDecimal flow;
+
+    /**
      * 时间
      */
     @Schema(description = "时间")

@@ -31,6 +31,7 @@
         <if test="id != null">
             and station_id = #{id}
         </if>
+        order by "time"
     </select>
     <select id="selectFirst" resultMap="BaseResultMap">
         select *

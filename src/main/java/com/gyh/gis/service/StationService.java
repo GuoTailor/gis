@@ -32,6 +32,10 @@ public class StationService {
         return stationMapper.selectObjs(wrapper).stream().map(it -> (Integer) it).collect(Collectors.toList());
     }
 
+    public Station selectById(Integer id) {
+        return stationMapper.selectById(id);
+    }
+
     public List<Station> getAll() {
         var wrapper = Wrappers.<Station>query();
         return stationMapper.selectList(wrapper);

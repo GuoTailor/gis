@@ -1,5 +1,7 @@
 package com.gyh.gis.collect;
 
+import com.alibaba.excel.EasyExcel;
+import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.dto.ResponseInfo;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
@@ -15,7 +17,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -58,6 +64,22 @@ public class DeviceStatusController {
             @Parameter(description = "开始时间") @RequestParam("startTime") LocalDateTime startTime,
             @Parameter(description = "结束时间") @RequestParam("endTime") LocalDateTime endTime) {
         return ResponseInfo.ok(deviceHistoryData.selectByTime(id, startTime, endTime));
+    }
+
+    @GetMapping("/download")
+    public void download(HttpServletResponse response,
+                         @Parameter(description = "设备id") @RequestParam("id") Integer id,
+                         @Parameter(description = "开始时间") @RequestParam("startTime") LocalDateTime startTime,
+                         @Parameter(description = "结束时间") @RequestParam("endTime") LocalDateTime endTime) throws IOException {
+        List<DeviceData> deviceData = deviceHistoryData.selectByTime(id, startTime, endTime);
+        Station station = stationService.selectById(id);
+        // 这里注意 有同学反应使用swagger 会导致各种问题，请直接用浏览器或者用postman
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+        String fileName = URLEncoder.encode(station.getStation(), StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        EasyExcel.write(response.getOutputStream(), DeviceData.class).sheet(station.getStation()).doWrite(deviceData);
     }
 
     @Operation(summary = "获取所有站点的历史流量报警数据")

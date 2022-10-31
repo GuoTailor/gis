@@ -67,6 +67,11 @@
             <version>42.5.0</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>3.1.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

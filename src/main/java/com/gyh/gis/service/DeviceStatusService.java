@@ -14,18 +14,16 @@ import com.gyh.gis.mapper.StationMapper;
 import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
-import com.gyh.gis.support.shardingtable.metadata.ShardingTable;
 import com.gyh.gis.util.AssertUtils;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,7 +73,7 @@ public class DeviceStatusService {
                 } else {
                     deviceStatus.setValue(BigDecimal.ZERO);
                 }
-                if (StateEnum.ERROR == req.getErrorState()){
+                if (StateEnum.ERROR == req.getErrorState()) {
                     deviceStatus.setErrorTime(LocalDateTime.now());
                 } else if (StateEnum.NORMAL == req.getErrorState()) {
                     deviceStatus.setErrorTime(null);
@@ -151,7 +149,7 @@ public class DeviceStatusService {
                 resp.setAlarmValue(deviceStatus.getValue());
                 resp.setAlarmTime(deviceStatus.getTime());
                 if (deviceStatus.getValue().compareTo(station.getFlow()) < 0) {
-                   resp.setAlarmState(StateEnum.ALARM);
+                    resp.setAlarmState(StateEnum.ALARM);
                 } else {
                     resp.setAlarmState(StateEnum.NORMAL);
                 }

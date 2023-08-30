@@ -27,7 +27,7 @@ public class EnumScannerUtils {
     public EnumScannerUtils() {
     }
 
-    public final static Set<Class<?>> scan(String[] confPkgs, Class<?> clazz) {
+    public static Set<Class<?>> scan(String[] confPkgs, Class<?> clazz) {
         Set<Class<?>> resClazzSet = new HashSet<>();
         List<AssignableTypeFilter> typeFilters = new LinkedList<>();
         typeFilters.add(new AssignableTypeFilter(clazz));

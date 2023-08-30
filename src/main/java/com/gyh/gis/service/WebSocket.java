@@ -1,7 +1,7 @@
 package com.gyh.gis.service;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
@@ -24,7 +24,7 @@ public class WebSocket implements WebSocketHandler {
      * @param session {@link WebSocketSession}
      */
     @Override
-    public void afterConnectionEstablished(@NotNull WebSocketSession session) throws InterruptedException {
+    public void afterConnectionEstablished(WebSocketSession session) throws InterruptedException {
         log.info("建立连接" + random);
         sessions.put(session);
     }
@@ -44,7 +44,7 @@ public class WebSocket implements WebSocketHandler {
     /**
      * 发生错误
      *
-     * @param session {@link WebSocketSession}
+     * @param session   {@link WebSocketSession}
      * @param exception 错误
      */
     @Override
@@ -56,7 +56,7 @@ public class WebSocket implements WebSocketHandler {
     /**
      * 关闭连接
      *
-     * @param session {@link WebSocketSession}
+     * @param session     {@link WebSocketSession}
      * @param closeStatus 关闭原因
      */
     @Override
@@ -67,6 +67,7 @@ public class WebSocket implements WebSocketHandler {
 
     /**
      * 是否支持发送部分消息
+     *
      * @return 支持
      */
     @Override

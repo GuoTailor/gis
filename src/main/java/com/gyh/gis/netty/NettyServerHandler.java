@@ -1,5 +1,6 @@
 package com.gyh.gis.netty;
 
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -90,10 +91,13 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * @param response 消息
      */
     public void send(String ipPort, NettyServletResponse response) {
-        cache.get(ipPort).cxt.channel().writeAndFlush(response);
+        ChannelFuture channelFuture = cache.get(ipPort).cxt.channel().writeAndFlush(response);
+        channelFuture.addListener(f -> f.isSuccess());
     }
 
     public boolean exist(String ipPort) {
         return cache.containsKey(ipPort);
     }
+
+
 }

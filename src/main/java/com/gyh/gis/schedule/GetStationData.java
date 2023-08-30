@@ -29,7 +29,7 @@ public class GetStationData {
     @Autowired
     private DeviceStatusService deviceStatusService;
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "1 0/10 * * * ?")
     public void getData() {
         List<Station> stations = stationService.getAll();
         stations.parallelStream()

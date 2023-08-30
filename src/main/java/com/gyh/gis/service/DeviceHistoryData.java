@@ -18,13 +18,13 @@ import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNew
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
 import com.gyh.gis.support.shardingtable.metadata.ShardingTable;
 import com.gyh.gis.util.AssertUtils;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -104,12 +104,12 @@ public class DeviceHistoryData {
             for (ShardingTable shardingTable : tableSharding) {
                 List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectByTime(startTime, endTime, id, shardingTable.getTableName());
                 if (CollectionUtils.isEmpty(deviceData)) continue;
-                deviceData.stream().map(it -> {
+                deviceData.forEach(it -> {
                     DeviceData data = new DeviceData();
                     BeanUtils.copyProperties(it, data);
                     data.setFlow(station.getFlow());
-                    return data;
-                }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+                    result.add(data);
+                });
                 Device10minuteHistory first = minuteHistoryMapper.selectFirst(id, shardingTable.getTableName());
                 if (first == null) continue;
                 // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表

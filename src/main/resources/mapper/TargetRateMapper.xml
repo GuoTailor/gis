@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gyh.gis.mapper.TargetRateMapper">
+  <resultMap id="BaseResultMap" type="com.gyh.gis.domain.TargetRate">
+    <!--@mbg.generated-->
+    <!--@Table target_rate-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="datatime" jdbcType="TIMESTAMP" property="datatime" />
+    <result column="station_id" jdbcType="INTEGER" property="stationId" />
+    <result column="target_rate" jdbcType="REAL" property="targetRate" />
+    <result column="online_count" jdbcType="SMALLINT" property="onlineCount" />
+    <result column="total_count" jdbcType="SMALLINT" property="totalCount" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, datatime, station_id, target_rate, online_count, total_count
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <!--@mbg.generated-->
+    select 
+    <include refid="Base_Column_List" />
+    from target_rate
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    <!--@mbg.generated-->
+    delete from target_rate
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.gyh.gis.domain.TargetRate">
+    <!--@mbg.generated-->
+    insert into target_rate (id, datatime, station_id, 
+      target_rate, online_count, total_count
+      )
+    values (#{id,jdbcType=INTEGER}, #{datatime,jdbcType=TIMESTAMP}, #{stationId,jdbcType=INTEGER}, 
+      #{targetRate,jdbcType=REAL}, #{onlineCount,jdbcType=SMALLINT}, #{totalCount,jdbcType=SMALLINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.gyh.gis.domain.TargetRate">
+    <!--@mbg.generated-->
+    insert into target_rate
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="datatime != null">
+        datatime,
+      </if>
+      <if test="stationId != null">
+        station_id,
+      </if>
+      <if test="targetRate != null">
+        target_rate,
+      </if>
+      <if test="onlineCount != null">
+        online_count,
+      </if>
+      <if test="totalCount != null">
+        total_count,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="datatime != null">
+        #{datatime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="stationId != null">
+        #{stationId,jdbcType=INTEGER},
+      </if>
+      <if test="targetRate != null">
+        #{targetRate,jdbcType=REAL},
+      </if>
+      <if test="onlineCount != null">
+        #{onlineCount,jdbcType=SMALLINT},
+      </if>
+      <if test="totalCount != null">
+        #{totalCount,jdbcType=SMALLINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.TargetRate">
+    <!--@mbg.generated-->
+    update target_rate
+    <set>
+      <if test="datatime != null">
+        datatime = #{datatime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="stationId != null">
+        station_id = #{stationId,jdbcType=INTEGER},
+      </if>
+      <if test="targetRate != null">
+        target_rate = #{targetRate,jdbcType=REAL},
+      </if>
+      <if test="onlineCount != null">
+        online_count = #{onlineCount,jdbcType=SMALLINT},
+      </if>
+      <if test="totalCount != null">
+        total_count = #{totalCount,jdbcType=SMALLINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.TargetRate">
+    <!--@mbg.generated-->
+    update target_rate
+    set datatime = #{datatime,jdbcType=TIMESTAMP},
+      station_id = #{stationId,jdbcType=INTEGER},
+      target_rate = #{targetRate,jdbcType=REAL},
+      online_count = #{onlineCount,jdbcType=SMALLINT},
+      total_count = #{totalCount,jdbcType=SMALLINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

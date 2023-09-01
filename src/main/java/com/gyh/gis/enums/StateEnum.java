@@ -5,7 +5,8 @@ import lombok.Getter;
 /**
  * create by GYH on 2022/9/26
  */
-public enum StateEnum implements Messageable{
+@Getter
+public enum StateEnum implements Messageable {
     /**
      * 正常
      */
@@ -18,7 +19,7 @@ public enum StateEnum implements Messageable{
      * 警报
      */
     ALARM("警报");
-    @Getter
+
     final String message;
 
     StateEnum(String message) {

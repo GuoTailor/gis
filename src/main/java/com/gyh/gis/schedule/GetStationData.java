@@ -7,6 +7,9 @@ import com.gyh.gis.netty.NettyClient;
 import com.gyh.gis.netty.NettyServletRequest;
 import com.gyh.gis.service.DeviceStatusService;
 import com.gyh.gis.service.StationService;
+import io.netty.channel.ChannelFuture;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +34,14 @@ public class GetStationData {
 
     @Scheduled(cron = "1 0/10 * * * ?")
     public void getData() {
+        GenericFutureListener<? extends Future<? super Void>> listener = future -> {
+            if (future.isSuccess()) {
+                log.info("发送成功");
+            } else {
+                log.error("发送失败");
+            }
+        };
+
         List<Station> stations = stationService.getAll();
         stations.parallelStream()
                 .filter(it -> StringUtils.hasLength(it.getIp()) && it.getPort() != null)
@@ -39,13 +50,16 @@ public class GetStationData {
                         try {
                             nettyClient.connect(it.getIp(), it.getPort(),
                                     request -> saveData(false, request, it),
-                                    request -> nettyClient.sendAsyncGainValue(it.getIp(), it.getPort()));
+                                    request -> nettyClient.sendAsyncGainValue(it.getIp(), it.getPort())
+                                            .addListener(listener)
+                            );
                         } catch (Exception e) {
                             saveData(true, null, it);
-                            e.printStackTrace();
+                            log.error(e.getLocalizedMessage(), e);
                         }
                     } else {
-                        nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
+                        ChannelFuture channelFuture = nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
+                        channelFuture.addListener(listener);
                     }
                 });
     }

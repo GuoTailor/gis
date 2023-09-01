@@ -1,6 +1,7 @@
 package com.gyh.gis.netty;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.springframework.stereotype.Component;
@@ -68,9 +69,9 @@ public class NettyClient {
      * @param ip   ip地址
      * @param port 端口
      */
-    public void sendAsyncGainValue(String ip, int port) {
+    public ChannelFuture sendAsyncGainValue(String ip, int port) {
         NettyServletResponse response = new NettyServletResponse(data);
-        initializer.getServerHandler().send(ip + decollator + port, response);
+        return initializer.getServerHandler().send(ip + decollator + port, response);
     }
 
 

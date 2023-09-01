@@ -90,9 +90,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * @param ipPort   ip：端口
      * @param response 消息
      */
-    public void send(String ipPort, NettyServletResponse response) {
-        ChannelFuture channelFuture = cache.get(ipPort).cxt.channel().writeAndFlush(response);
-        channelFuture.addListener(f -> f.isSuccess());
+    public ChannelFuture send(String ipPort, NettyServletResponse response) {
+        return cache.get(ipPort).cxt.channel().writeAndFlush(response);
     }
 
     public boolean exist(String ipPort) {

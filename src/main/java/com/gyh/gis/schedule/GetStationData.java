@@ -7,6 +7,7 @@ import com.gyh.gis.netty.NettyClient;
 import com.gyh.gis.netty.NettyServletRequest;
 import com.gyh.gis.service.DeviceStatusService;
 import com.gyh.gis.service.StationService;
+import com.gyh.gis.service.TargetRateService;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -31,21 +32,19 @@ public class GetStationData {
     private NettyClient nettyClient;
     @Autowired
     private DeviceStatusService deviceStatusService;
+    @Autowired
+    private TargetRateService targetRateService;
 
     @Scheduled(cron = "1 0/10 * * * ?")
     public void getData() {
-        GenericFutureListener<? extends Future<? super Void>> listener = future -> {
-            if (future.isSuccess()) {
-                log.info("发送成功");
-            } else {
-                log.error("发送失败");
-            }
-        };
-
         List<Station> stations = stationService.getAll();
         stations.parallelStream()
                 .filter(it -> StringUtils.hasLength(it.getIp()) && it.getPort() != null)
                 .forEach(it -> {
+                    GenericFutureListener<? extends Future<? super Void>> listener = future -> {
+                        log.info("{} 发送{}", it.getId(), future.isSuccess() ? "成功" : "失败");
+                        targetRateService.statistic(it.getId(), future.isSuccess());
+                    };
                     if (!nettyClient.exist(it.getIp(), it.getPort())) {
                         try {
                             nettyClient.connect(it.getIp(), it.getPort(),

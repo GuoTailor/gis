@@ -2,6 +2,7 @@ package com.gyh.gis.domain;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -15,7 +16,7 @@ public class TargetRate {
     /**
      * 时间
      */
-    private Date datatime;
+    private LocalDateTime datatime;
 
     /**
      * 站点id
@@ -30,10 +31,10 @@ public class TargetRate {
     /**
      * 在线次数
      */
-    private Short onlineCount;
+    private Integer onlineCount;
 
     /**
      * 总次数
      */
-    private Short totalCount;
+    private Integer totalCount;
 }

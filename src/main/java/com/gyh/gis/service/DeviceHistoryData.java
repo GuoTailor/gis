@@ -121,13 +121,13 @@ public class DeviceHistoryData {
             for (ShardingTable shardingTable : tableSharding) {
                 List<DeviceDayHistory> deviceData = dayHistoryMapper.selectByTime(startTime, endTime, id, shardingTable.getTableName());
                 if (CollectionUtils.isEmpty(deviceData)) continue;
-                deviceData.stream().map(it -> {
+                deviceData.forEach(it -> {
                     DeviceData data = new DeviceData();
                     BeanUtils.copyProperties(it, data);
                     data.setFlow(station.getFlow());
                     data.setTime(it.getTime().atTime(LocalTime.MIN));
-                    return data;
-                }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+                    result.add(data);
+                });
                 DeviceDayHistory first = dayHistoryMapper.selectFirst(id, shardingTable.getTableName());
                 if (first == null) continue;
                 // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
@@ -151,11 +151,9 @@ public class DeviceHistoryData {
         alarmList.setAlarmInfoResps(result);
         var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
         if (CollectionUtils.isEmpty(tableSharding)) return alarmList;
-        QueryWrapper<Station> wrapper;
+        QueryWrapper<Station> wrapper = Wrappers.query();
         if (StringUtils.hasLength(stationName)) {
-            wrapper = Wrappers.<Station>query().eq("station", stationName);
-        } else {
-            wrapper = Wrappers.query();
+            wrapper = wrapper.eq("station", stationName);
         }
         List<Station> stations = stationMapper.selectList(wrapper);
         Map<Integer, Station> collect = stations.stream().collect(Collectors.toMap(Station::getId, it -> it));
@@ -166,7 +164,7 @@ public class DeviceHistoryData {
             }
             List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(startTime, endTime, StateEnum.ALARM, cancelAlarm, collect.keySet(), shardingTable.getTableName());
             if (CollectionUtils.isEmpty(deviceData)) continue;
-            deviceData.stream().map(it -> {
+            deviceData.forEach(it -> {
                 DeviceAlarmInfoResp data = new DeviceAlarmInfoResp();
                 BeanUtils.copyProperties(it, data);
                 data.setAlarmValue(it.getValue());
@@ -177,8 +175,8 @@ public class DeviceHistoryData {
                 data.setStationName(station.getStation());
                 data.setLatitude(station.getLatitude());
                 data.setLongitude(station.getLongitude());
-                return data;
-            }).collect(() -> result, ArrayList::add, ArrayList::addAll);
+                result.add(data);
+            });
             Device10minuteHistory first = minuteHistoryMapper.selectFirst(null, shardingTable.getTableName());
             if (first == null) continue;
             // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表

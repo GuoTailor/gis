@@ -5,6 +5,7 @@ import lombok.Getter;
 /**
  * create by GYH on 2022/10/10
  */
+@Getter
 public enum AlarmStationEnum implements Messageable {
     /**
      * 已处理
@@ -14,7 +15,6 @@ public enum AlarmStationEnum implements Messageable {
      * 警报
      */
     ALARM("警报");
-    @Getter
     final String message;
 
     AlarmStationEnum(String message) {

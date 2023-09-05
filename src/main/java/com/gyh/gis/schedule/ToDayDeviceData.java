@@ -2,8 +2,10 @@ package com.gyh.gis.schedule;
 
 import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceDayHistory;
+import com.gyh.gis.domain.TargetRate;
 import com.gyh.gis.service.DeviceHistoryData;
 import com.gyh.gis.service.StationService;
+import com.gyh.gis.service.TargetRateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +27,8 @@ public class ToDayDeviceData {
     private StationService stationService;
     @Autowired
     private DeviceHistoryData deviceHistoryData;
+    @Autowired
+    private TargetRateService targetRateService;
 
     @Scheduled(cron = "1 0 0 * * ?")
     public void configureTasks() {
@@ -33,18 +37,23 @@ public class ToDayDeviceData {
         List<Integer> stationIds = stationService.selectAllId();
         stationIds.parallelStream().forEach(it -> {
             var device10minuteHistories = deviceHistoryData.selectByOneDay(date, it);
-            if (CollectionUtils.isEmpty(device10minuteHistories)) return;
-            BigDecimal sum = device10minuteHistories
-                    .stream()
-                    .map(Device10minuteHistory::getValue)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
-            DeviceDayHistory dayHistory = new DeviceDayHistory();
-            dayHistory.setTime(date);
-            dayHistory.setValue(flow);
-            dayHistory.setStationId(device10minuteHistories.get(0).getStationId());
-            int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
-            if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), flow);
+            if (!CollectionUtils.isEmpty(device10minuteHistories)) {
+                BigDecimal sum = device10minuteHistories
+                        .stream()
+                        .map(Device10minuteHistory::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
+                DeviceDayHistory dayHistory = new DeviceDayHistory();
+                dayHistory.setTime(date);
+                dayHistory.setValue(flow);
+                dayHistory.setStationId(device10minuteHistories.get(0).getStationId());
+                int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
+                if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), flow);
+            }
+            List<TargetRate> targetRates = targetRateService.selectByOneDay(date, it);
+            if (!CollectionUtils.isEmpty(targetRates)) {
+
+            }
         });
     }
 

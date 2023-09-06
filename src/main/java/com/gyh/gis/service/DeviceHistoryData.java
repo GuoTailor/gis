@@ -78,6 +78,10 @@ public class DeviceHistoryData {
     public List<Device10minuteHistory> selectByOneDay(LocalDate time, Integer stationId) {
         var startTime = time.atStartOfDay();
         var endTime = time.atTime(LocalTime.MAX);
+        return selectByRange(startTime, endTime, stationId);
+    }
+
+    public  List<Device10minuteHistory> selectByRange(LocalDateTime startTime, LocalDateTime endTime, Integer stationId) {
         var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
         if (CollectionUtils.isEmpty(tableSharding)) return List.of();
         ArrayList<Device10minuteHistory> result = new ArrayList<>();

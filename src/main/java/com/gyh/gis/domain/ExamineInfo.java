@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 public class ExamineInfo {
     private Integer id;
 
+    private Integer stationId;
+
     /**
      * 水电站统计代码
      */

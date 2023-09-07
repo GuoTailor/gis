@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
+ * 水电站达标率
  * create by GYH on 2023/9/4
  */
 @Service

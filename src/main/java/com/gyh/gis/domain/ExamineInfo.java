@@ -6,13 +6,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * create by GYH on 2023/9/5
+ * create by GYH on 2023/9/7
  */
 @Data
 public class ExamineInfo {
+    /**
+     * id
+     */
     private Integer id;
-
-    private Integer stationId;
 
     /**
      * 水电站统计代码
@@ -47,4 +48,8 @@ public class ExamineInfo {
      */
     private LocalDateTime recTime;
 
+    /**
+     * 水电站id
+     */
+    private Integer stationId;
 }

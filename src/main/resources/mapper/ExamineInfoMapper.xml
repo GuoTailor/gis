@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gyh.gis.mapper.ExamineInfoMapper">
+    <resultMap id="BaseResultMap" type="com.gyh.gis.domain.ExamineInfo">
+        <!--@mbg.generated-->
+        <!--@Table examine_info-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="hyst_code" jdbcType="VARCHAR" property="hystCode"/>
+        <result column="eco_online" jdbcType="BOOLEAN" property="ecoOnline"/>
+        <result column="eco_flow" jdbcType="BOOLEAN" property="ecoFlow"/>
+        <result column="ass_per" jdbcType="VARCHAR" property="assPer"/>
+        <result column="ass_start" jdbcType="TIMESTAMP" property="assStart"/>
+        <result column="ass_end" jdbcType="TIMESTAMP" property="assEnd"/>
+        <result column="rec_time" jdbcType="TIMESTAMP" property="recTime"/>
+        <result column="station_id" jdbcType="INTEGER" property="stationId"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        hyst_code,
+        eco_online,
+        eco_flow,
+        ass_per,
+        ass_start,
+        ass_end,
+        rec_time,
+        station_id
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        <!--@mbg.generated-->
+        select
+        <include refid="Base_Column_List"/>
+        from examine_info
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        <!--@mbg.generated-->
+        delete
+        from examine_info
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insert" parameterType="com.gyh.gis.domain.ExamineInfo">
+        <!--@mbg.generated-->
+        insert into examine_info (id, hyst_code, eco_online,
+                                  eco_flow, ass_per, ass_start,
+                                  ass_end, rec_time, station_id)
+        values (#{id,jdbcType=INTEGER}, #{hystCode,jdbcType=VARCHAR}, #{ecoOnline,jdbcType=BOOLEAN},
+                #{ecoFlow,jdbcType=BOOLEAN}, #{assPer,jdbcType=VARCHAR}, #{assStart,jdbcType=TIMESTAMP},
+                #{assEnd,jdbcType=TIMESTAMP}, #{recTime,jdbcType=TIMESTAMP}, #{stationId,jdbcType=INTEGER})
+    </insert>
+    <insert id="insertSelective" parameterType="com.gyh.gis.domain.ExamineInfo">
+        <!--@mbg.generated-->
+        insert into examine_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="hystCode != null">
+                hyst_code,
+            </if>
+            <if test="ecoOnline != null">
+                eco_online,
+            </if>
+            <if test="ecoFlow != null">
+                eco_flow,
+            </if>
+            <if test="assPer != null">
+                ass_per,
+            </if>
+            <if test="assStart != null">
+                ass_start,
+            </if>
+            <if test="assEnd != null">
+                ass_end,
+            </if>
+            <if test="recTime != null">
+                rec_time,
+            </if>
+            <if test="stationId != null">
+                station_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="hystCode != null">
+                #{hystCode,jdbcType=VARCHAR},
+            </if>
+            <if test="ecoOnline != null">
+                #{ecoOnline,jdbcType=BOOLEAN},
+            </if>
+            <if test="ecoFlow != null">
+                #{ecoFlow,jdbcType=BOOLEAN},
+            </if>
+            <if test="assPer != null">
+                #{assPer,jdbcType=VARCHAR},
+            </if>
+            <if test="assStart != null">
+                #{assStart,jdbcType=TIMESTAMP},
+            </if>
+            <if test="assEnd != null">
+                #{assEnd,jdbcType=TIMESTAMP},
+            </if>
+            <if test="recTime != null">
+                #{recTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="stationId != null">
+                #{stationId,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.ExamineInfo">
+        <!--@mbg.generated-->
+        update examine_info
+        <set>
+            <if test="hystCode != null">
+                hyst_code = #{hystCode,jdbcType=VARCHAR},
+            </if>
+            <if test="ecoOnline != null">
+                eco_online = #{ecoOnline,jdbcType=BOOLEAN},
+            </if>
+            <if test="ecoFlow != null">
+                eco_flow = #{ecoFlow,jdbcType=BOOLEAN},
+            </if>
+            <if test="assPer != null">
+                ass_per = #{assPer,jdbcType=VARCHAR},
+            </if>
+            <if test="assStart != null">
+                ass_start = #{assStart,jdbcType=TIMESTAMP},
+            </if>
+            <if test="assEnd != null">
+                ass_end = #{assEnd,jdbcType=TIMESTAMP},
+            </if>
+            <if test="recTime != null">
+                rec_time = #{recTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="stationId != null">
+                station_id = #{stationId,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.ExamineInfo">
+        <!--@mbg.generated-->
+        update examine_info
+        set hyst_code  = #{hystCode,jdbcType=VARCHAR},
+            eco_online = #{ecoOnline,jdbcType=BOOLEAN},
+            eco_flow   = #{ecoFlow,jdbcType=BOOLEAN},
+            ass_per    = #{assPer,jdbcType=VARCHAR},
+            ass_start  = #{assStart,jdbcType=TIMESTAMP},
+            ass_end    = #{assEnd,jdbcType=TIMESTAMP},
+            rec_time   = #{recTime,jdbcType=TIMESTAMP},
+            station_id = #{stationId,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>

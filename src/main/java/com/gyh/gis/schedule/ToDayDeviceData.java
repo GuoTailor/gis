@@ -3,6 +3,7 @@ package com.gyh.gis.schedule;
 import com.gyh.gis.domain.*;
 import com.gyh.gis.enums.PeriodEnum;
 import com.gyh.gis.service.DeviceHistoryData;
+import com.gyh.gis.service.ExamineInfoService;
 import com.gyh.gis.service.StationService;
 import com.gyh.gis.service.TargetRateService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,8 @@ public class ToDayDeviceData {
     private DeviceHistoryData deviceHistoryData;
     @Autowired
     private TargetRateService targetRateService;
+    @Autowired
+    private ExamineInfoService examineInfoService;
 
     @Scheduled(cron = "1 0 0 * * ?")
     public void configureTasks() {
@@ -97,9 +100,8 @@ public class ToDayDeviceData {
                 Float targetRate = sum / targetRates.size();
                 examineInfo.setEcoOnline(targetRate.compareTo(100F) >= 0);
             }
+            examineInfoService.insert(examineInfo);
         });
     }
-
-    
 
 }

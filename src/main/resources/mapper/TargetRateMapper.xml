@@ -40,13 +40,6 @@
         from target_rate
         where id = #{id,jdbcType=INTEGER}
     </delete>
-    <insert id="insert" parameterType="com.gyh.gis.domain.TargetRate">
-        <!--@mbg.generated-->
-        insert into target_rate (id, datatime, station_id,
-                                 target_rate, online_count, total_count)
-        values (#{id,jdbcType=INTEGER}, #{datatime,jdbcType=TIMESTAMP}, #{stationId,jdbcType=INTEGER},
-                #{targetRate,jdbcType=REAL}, #{onlineCount,jdbcType=SMALLINT}, #{totalCount,jdbcType=SMALLINT})
-    </insert>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.TargetRate">
         <!--@mbg.generated-->
         insert into target_rate

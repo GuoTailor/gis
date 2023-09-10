@@ -1,0 +1,184 @@
+package com.gyh.gis.schedule;
+
+import com.gyh.gis.domain.*;
+import com.gyh.gis.enums.PeriodEnum;
+import com.gyh.gis.service.DeviceHistoryData;
+import com.gyh.gis.service.ExamineInfoService;
+import com.gyh.gis.service.StationService;
+import com.gyh.gis.service.TargetRateService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.function.Consumer;
+
+/**
+ * create by GYH on 2022/9/27
+ */
+@Slf4j
+@Component
+public class StationDataTask {
+    @Autowired
+    private StationService stationService;
+    @Autowired
+    private DeviceHistoryData deviceHistoryData;
+    @Autowired
+    private TargetRateService targetRateService;
+    @Autowired
+    private ExamineInfoService examineInfoService;
+
+    @Scheduled(cron = "1 0 0 * * ?")
+    public void configureTasks() {
+        var date = LocalDate.now().minusDays(1);
+        log.info("开始统计 {} 每个站点流量", date);
+        List<Station> stationIds = stationService.getAll();
+        stationIds.parallelStream().forEach(it -> {
+
+            log.info("开始统计 {} 每个站天达标率", date);
+            ExamineInfo examineInfo = new ExamineInfo();
+            examineInfo.setStationId(it.getId());
+            examineInfo.setAssPer(PeriodEnum.DAY);
+            LocalDateTime now = LocalDateTime.now();
+            examineInfo.setRecTime(now);
+            var startTime = date.atStartOfDay();
+            var endTime = date.atTime(LocalTime.MAX);
+            stationRange(startTime, endTime, examineInfo, it.getFlow());
+            examineInfo.setStationCount(1);
+            examineInfoService.insert(examineInfo);
+            if (examineInfo.getFlowTargetRate() != null) {
+                DeviceDayHistory dayHistory = new DeviceDayHistory();
+                dayHistory.setTime(date);
+                dayHistory.setValue(examineInfo.getFlowTargetRate());
+                dayHistory.setStationId(it.getId());
+                int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
+                if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), examineInfo.getFlowTargetRate());
+            }
+            processingMonth(examineInfo, it.getFlow());
+            processingYear(examineInfo, it.getFlow());
+        });
+
+    }
+
+    /**
+     * 处理统计月
+     */
+    public void processingMonth(ExamineInfo examineInfo, BigDecimal vouchFlow) {
+        var data = LocalDate.now();
+        int dayOfMonth = data.getDayOfMonth();
+        var startTime = data.minusDays(dayOfMonth - 1).atStartOfDay();
+        var endTime = startTime.plusDays(data.lengthOfMonth()).minusNanos(1);
+        processing(startTime, endTime, examineInfo, vouchFlow, PeriodEnum.MONTH);
+    }
+
+    /**
+     * 处理统计年
+     */
+    public void processingYear(ExamineInfo examineInfo, BigDecimal vouchFlow) {
+        var data = LocalDate.now();
+        int dayOfYear = data.getDayOfYear();
+        var startTime = data.minusDays(dayOfYear - 1).atStartOfDay();
+        var endTime = startTime.plusDays(data.lengthOfYear()).minusNanos(1);
+        processing(startTime, endTime, examineInfo, vouchFlow, PeriodEnum.YEAR);
+    }
+
+    private void processing(LocalDateTime startTime, LocalDateTime endTime, ExamineInfo examineInfo, BigDecimal vouchFlow, PeriodEnum per) {
+        ExamineInfo examineInfoByYear = examineInfoService.selectByTime(startTime, endTime, per, examineInfo.getStationId());
+        // 如果为null说明这个周期一次都还没有生成
+        if (examineInfoByYear == null) {
+            examineInfoByYear = new ExamineInfo();
+            examineInfoByYear.setAssPer(per);
+            examineInfoByYear.setStationCount(1);
+            examineInfoByYear.setStationId(examineInfo.getStationId());
+            examineInfoByYear.setHystCode(examineInfo.getHystCode());
+            examineInfoByYear.setAssStart(examineInfo.getAssStart());
+            examineInfoByYear.setAssEnd(examineInfo.getAssEnd());
+            examineInfoByYear.setRecTime(LocalDateTime.now());
+            int dayOfPer = 0;
+            if (per == PeriodEnum.MONTH) {
+                dayOfPer = startTime.getDayOfMonth();
+            } else if (per == PeriodEnum.YEAR) {
+                dayOfPer = startTime.getDayOfYear();
+            }
+            // 如果是第一天，就不用重复统计了，当前examineInfo就是这一天的
+            // 否则就是之前的没统计到，需要重新从第一天开始统计
+            if (dayOfPer == 1) {
+                examineInfoByYear.setEcoFlow(examineInfo.getEcoFlow());
+                examineInfoByYear.setEcoOnline(examineInfo.getEcoOnline());
+            } else {
+                stationRange(startTime, endTime, examineInfo, vouchFlow);
+            }
+            examineInfoService.insert(examineInfoByYear);
+        } else {
+            examineInfoByYear.setAssEnd(examineInfo.getAssEnd());
+            examineInfoByYear.setRecTime(LocalDateTime.now());
+            BigDecimal flowTargetRate = examineInfoByYear.getFlowTargetRate()
+                    .multiply(new BigDecimal(examineInfoByYear.getStationCount()))
+                    .add(examineInfo.getFlowTargetRate())
+                    .divide(new BigDecimal(examineInfoByYear.getStationCount() + 1), 4, RoundingMode.HALF_UP);
+            examineInfoByYear.setFlowTargetRate(flowTargetRate);
+            examineInfoByYear.setEcoFlow(vouchFlow.compareTo(flowTargetRate) <= 0);
+
+            BigDecimal onlineTargetRate = examineInfoByYear.getOnlineTargetRate()
+                    .multiply(new BigDecimal(examineInfoByYear.getStationCount()))
+                    .add(examineInfo.getOnlineTargetRate())
+                    .divide(new BigDecimal(examineInfoByYear.getStationCount() + 1), 4, RoundingMode.HALF_UP);
+            examineInfoByYear.setOnlineTargetRate(onlineTargetRate);
+            examineInfoByYear.setEcoOnline(onlineTargetRate.compareTo(new BigDecimal(100)) >= 0);
+
+            examineInfoByYear.setStationCount(examineInfoByYear.getStationCount() + 1);
+            examineInfoService.update(examineInfoByYear);
+        }
+    }
+
+    /**
+     * 从最小单位周期统计某个范围的数据
+     */
+    private void stationRange(LocalDateTime startTime, LocalDateTime endTime, ExamineInfo examineInfo, BigDecimal vouchFlow) {
+        Consumer<LocalDateTime> consumer = (time) -> {
+            if (examineInfo.getAssStart() == null) {
+                examineInfo.setAssStart(time);
+            } else if (time.isBefore(examineInfo.getAssStart())) {
+                examineInfo.setAssStart(time);
+            }
+            if (examineInfo.getAssEnd() == null) {
+                examineInfo.setAssEnd(time);
+            } else if (time.isAfter(examineInfo.getAssEnd())) {
+                examineInfo.setAssEnd(time);
+            }
+        };
+        var device10minuteHistories = deviceHistoryData.selectByRange(startTime, endTime, examineInfo.getStationId());
+        if (!CollectionUtils.isEmpty(device10minuteHistories)) {
+            BigDecimal sum = device10minuteHistories
+                    .stream()
+                    .peek(device10minuteHistory -> consumer.accept(device10minuteHistory.getTime()))
+                    .map(Device10minuteHistory::getValue)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
+            examineInfo.setEcoFlow(vouchFlow.compareTo(flow) <= 0);
+            examineInfo.setFlowTargetRate(flow);
+        }
+        List<TargetRate> targetRates = targetRateService.selectByRange(startTime, endTime, examineInfo.getStationId());
+        if (!CollectionUtils.isEmpty(targetRates)) {
+            Float sum = targetRates.stream()
+                    .peek(targetRate -> consumer.accept(targetRate.getDatatime()))
+                    .map(TargetRate::getTargetRate)
+                    .reduce(0F, Float::sum);
+            Float targetRate = sum / targetRates.size();
+            examineInfo.setEcoOnline(targetRate.compareTo(100F) >= 0);
+            examineInfo.setOnlineTargetRate(new BigDecimal(targetRate).setScale(4, RoundingMode.HALF_UP));
+        } else {
+            consumer.accept(LocalDateTime.now());
+            examineInfo.setEcoOnline(false);
+            examineInfo.setOnlineTargetRate(BigDecimal.ZERO);
+        }
+    }
+
+}

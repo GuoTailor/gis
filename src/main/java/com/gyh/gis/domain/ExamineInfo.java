@@ -3,10 +3,11 @@ package com.gyh.gis.domain;
 import com.gyh.gis.enums.PeriodEnum;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * create by GYH on 2023/9/7
+ * create by GYH on 2023/9/10
  */
 @Data
 public class ExamineInfo {
@@ -39,10 +40,12 @@ public class ExamineInfo {
      * 考核开始时间
      */
     private LocalDateTime assStart;
+
     /**
      * 考核结束时间
      */
     private LocalDateTime assEnd;
+
     /**
      * 记录时间
      */
@@ -52,4 +55,19 @@ public class ExamineInfo {
      * 水电站id
      */
     private Integer stationId;
+
+    /**
+     * 统计次数
+     */
+    private Integer stationCount;
+
+    /**
+     * 下泄达标率
+     */
+    private BigDecimal flowTargetRate;
+
+    /**
+     * 在线达标率
+     */
+    private BigDecimal onlineTargetRate;
 }

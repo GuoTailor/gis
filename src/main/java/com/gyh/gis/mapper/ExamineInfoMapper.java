@@ -1,14 +1,13 @@
 package com.gyh.gis.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.gyh.gis.domain.ExamineInfo;
 
 /**
- * create by GYH on 2023/9/7
+ * create by GYH on 2023/9/10
  */
-public interface ExamineInfoMapper {
+public interface ExamineInfoMapper extends BaseMapper<ExamineInfo> {
     int deleteByPrimaryKey(Integer id);
-
-    int insert(ExamineInfo record);
 
     int insertSelective(ExamineInfo record);
 

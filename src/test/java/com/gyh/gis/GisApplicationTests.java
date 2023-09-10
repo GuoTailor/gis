@@ -4,7 +4,7 @@ import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.StateEnum;
-import com.gyh.gis.schedule.ToDayDeviceData;
+import com.gyh.gis.schedule.StationDataTask;
 import com.gyh.gis.service.DeviceStatusService;
 import com.gyh.gis.service.StationService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -25,7 +24,7 @@ class GisApplicationTests {
     @Autowired
     private StationService stationService;
     @Autowired
-    private ToDayDeviceData toDayDeviceData;
+    private StationDataTask stationDataTask;
 
     @Test
     void contextLoads() {
@@ -53,6 +52,6 @@ class GisApplicationTests {
 
     @Test
     public void testCount() {
-        toDayDeviceData.configureTasks();
+        stationDataTask.configureTasks();
     }
 }

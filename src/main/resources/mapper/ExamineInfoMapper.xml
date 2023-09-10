@@ -13,6 +13,9 @@
         <result column="ass_end" jdbcType="TIMESTAMP" property="assEnd"/>
         <result column="rec_time" jdbcType="TIMESTAMP" property="recTime"/>
         <result column="station_id" jdbcType="INTEGER" property="stationId"/>
+        <result column="station_count" jdbcType="INTEGER" property="stationCount"/>
+        <result column="flow_target_rate" jdbcType="NUMERIC" property="flowTargetRate"/>
+        <result column="online_target_rate" jdbcType="NUMERIC" property="onlineTargetRate"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
@@ -24,7 +27,10 @@
         ass_start,
         ass_end,
         rec_time,
-        station_id
+        station_id,
+        station_count,
+        flow_target_rate,
+        online_target_rate
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         <!--@mbg.generated-->
@@ -39,15 +45,6 @@
         from examine_info
         where id = #{id,jdbcType=INTEGER}
     </delete>
-    <insert id="insert" parameterType="com.gyh.gis.domain.ExamineInfo">
-        <!--@mbg.generated-->
-        insert into examine_info (id, hyst_code, eco_online,
-                                  eco_flow, ass_per, ass_start,
-                                  ass_end, rec_time, station_id)
-        values (#{id,jdbcType=INTEGER}, #{hystCode,jdbcType=VARCHAR}, #{ecoOnline,jdbcType=BOOLEAN},
-                #{ecoFlow,jdbcType=BOOLEAN}, #{assPer,jdbcType=VARCHAR}, #{assStart,jdbcType=TIMESTAMP},
-                #{assEnd,jdbcType=TIMESTAMP}, #{recTime,jdbcType=TIMESTAMP}, #{stationId,jdbcType=INTEGER})
-    </insert>
     <insert id="insertSelective" parameterType="com.gyh.gis.domain.ExamineInfo">
         <!--@mbg.generated-->
         insert into examine_info
@@ -79,6 +76,15 @@
             <if test="stationId != null">
                 station_id,
             </if>
+            <if test="stationCount != null">
+                station_count,
+            </if>
+            <if test="flowTargetRate != null">
+                flow_target_rate,
+            </if>
+            <if test="onlineTargetRate != null">
+                online_target_rate,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -107,6 +113,15 @@
             </if>
             <if test="stationId != null">
                 #{stationId,jdbcType=INTEGER},
+            </if>
+            <if test="stationCount != null">
+                #{stationCount,jdbcType=INTEGER},
+            </if>
+            <if test="flowTargetRate != null">
+                #{flowTargetRate,jdbcType=NUMERIC},
+            </if>
+            <if test="onlineTargetRate != null">
+                #{onlineTargetRate,jdbcType=NUMERIC},
             </if>
         </trim>
     </insert>
@@ -138,20 +153,32 @@
             <if test="stationId != null">
                 station_id = #{stationId,jdbcType=INTEGER},
             </if>
+            <if test="stationCount != null">
+                station_count = #{stationCount,jdbcType=INTEGER},
+            </if>
+            <if test="flowTargetRate != null">
+                flow_target_rate = #{flowTargetRate,jdbcType=NUMERIC},
+            </if>
+            <if test="onlineTargetRate != null">
+                online_target_rate = #{onlineTargetRate,jdbcType=NUMERIC},
+            </if>
         </set>
         where id = #{id,jdbcType=INTEGER}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.ExamineInfo">
         <!--@mbg.generated-->
         update examine_info
-        set hyst_code  = #{hystCode,jdbcType=VARCHAR},
-            eco_online = #{ecoOnline,jdbcType=BOOLEAN},
-            eco_flow   = #{ecoFlow,jdbcType=BOOLEAN},
-            ass_per    = #{assPer,jdbcType=VARCHAR},
-            ass_start  = #{assStart,jdbcType=TIMESTAMP},
-            ass_end    = #{assEnd,jdbcType=TIMESTAMP},
-            rec_time   = #{recTime,jdbcType=TIMESTAMP},
-            station_id = #{stationId,jdbcType=INTEGER}
+        set hyst_code          = #{hystCode,jdbcType=VARCHAR},
+            eco_online         = #{ecoOnline,jdbcType=BOOLEAN},
+            eco_flow           = #{ecoFlow,jdbcType=BOOLEAN},
+            ass_per            = #{assPer,jdbcType=VARCHAR},
+            ass_start          = #{assStart,jdbcType=TIMESTAMP},
+            ass_end            = #{assEnd,jdbcType=TIMESTAMP},
+            rec_time           = #{recTime,jdbcType=TIMESTAMP},
+            station_id         = #{stationId,jdbcType=INTEGER},
+            station_count      = #{stationCount,jdbcType=INTEGER},
+            flow_target_rate   = #{flowTargetRate,jdbcType=NUMERIC},
+            online_target_rate = #{onlineTargetRate,jdbcType=NUMERIC}
         where id = #{id,jdbcType=INTEGER}
     </update>
 </mapper>

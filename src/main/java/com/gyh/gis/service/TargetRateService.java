@@ -53,6 +53,10 @@ public class TargetRateService {
     public List<TargetRate> selectByOneDay(LocalDate time, Integer stationId) {
         var startTime = time.atStartOfDay();
         var endTime = time.atTime(LocalTime.MAX);
+        return selectByRange(startTime, endTime, stationId);
+    }
+
+    public List<TargetRate> selectByRange(LocalDateTime startTime, LocalDateTime endTime, Integer stationId) {
         return targetRateMapper.selectList(new QueryWrapper<TargetRate>().between("datatime", startTime, endTime).eq("station_id", stationId));
     }
 }

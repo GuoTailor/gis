@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 public interface TargetRateMapper extends BaseMapper<TargetRate> {
     int deleteByPrimaryKey(Integer id);
 
-    int insert(TargetRate record);
-
     int insertSelective(TargetRate record);
 
     TargetRate selectByPrimaryKey(Integer id);

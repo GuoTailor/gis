@@ -7,7 +7,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -22,6 +21,10 @@ public class TargetRateService {
     @Resource
     private TargetRateMapper targetRateMapper;
 
+    public TargetRate selectByStationIdAndTime(LocalDateTime time, Integer stationId) {
+        return targetRateMapper.selectByStationIdAndTime(stationId, time);
+    }
+
     /**
      * 统计定时任务
      *
@@ -31,7 +34,7 @@ public class TargetRateService {
     public void statistic(Integer stationId, boolean isOnline) {
         LocalDateTime now = LocalDateTime.now();
         // 注意这个时间是按定时任务来划分的
-        LocalDateTime formData = LocalDateTime.of(now.toLocalDate(), LocalTime.of(now.getHour(), now.getMinute() / 10 * 10));
+        LocalDateTime formData = LocalDateTime.of(now.toLocalDate(), LocalTime.of(now.getHour(), 0));
         TargetRate targetRate = targetRateMapper.selectByStationIdAndTime(stationId, formData);
         if (targetRate == null) {
             targetRate = new TargetRate();
@@ -48,12 +51,6 @@ public class TargetRateService {
         } else {
             targetRateMapper.insertSelective(targetRate);
         }
-    }
-
-    public List<TargetRate> selectByOneDay(LocalDate time, Integer stationId) {
-        var startTime = time.atStartOfDay();
-        var endTime = time.atTime(LocalTime.MAX);
-        return selectByRange(startTime, endTime, stationId);
     }
 
     public List<TargetRate> selectByRange(LocalDateTime startTime, LocalDateTime endTime, Integer stationId) {

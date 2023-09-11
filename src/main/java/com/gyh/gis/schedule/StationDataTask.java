@@ -161,7 +161,7 @@ public class StationDataTask {
                     .peek(device10minuteHistory -> consumer.accept(device10minuteHistory.getTime()))
                     .map(Device10minuteHistory::getValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
+            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 4, RoundingMode.HALF_UP);
             examineInfo.setEcoFlow(vouchFlow.compareTo(flow) <= 0);
             examineInfo.setFlowTargetRate(flow);
         }

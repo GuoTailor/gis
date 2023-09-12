@@ -1,41 +1,36 @@
 package com.gyh.gis.dto.resp;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * create by GYH on 2023/9/11
+ * create by GYH on 2023/9/12
  */
 @Data
-public class ExamineResp {
-    /**
-     * 水电站id
-     */
-    private Integer stationId;
-    /**
-     * 站名
-     */
-    private String station;
+public class ExamineResp extends StatisticResp {
 
-    /**
-     * 所属流域
-     */
-    private String area;
+    private List<Target> targets;
 
-    /**
-     * 下泄达标率
-     */
-    private BigDecimal flowTargetRate;
+    @Data
+    public static class Target {
+        /**
+         * 时间
+         */
+        @Schema(description = "时间")
+        private LocalDateTime time;
+        /**
+         * 在线率是否合格
+         */
+        @Schema(description = "在线率是否合格")
+        private Boolean ecoOnline;
 
-    /**
-     * 在线达标率
-     */
-    private BigDecimal onlineTargetRate;
-
-    /**
-     * 时间
-     */
-    private LocalDateTime time;
+        /**
+         * 下泄率是否合格
+         */
+        @Schema(description = "下泄率是否合格")
+        private Boolean ecoFlow;
+    }
 }

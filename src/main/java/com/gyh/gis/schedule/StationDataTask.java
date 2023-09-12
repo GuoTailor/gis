@@ -42,7 +42,7 @@ public class StationDataTask {
         List<Station> stationIds = stationService.getAll();
         stationIds.parallelStream().forEach(it -> {
 
-            log.info("开始统计 {} 每个站天达标率", date);
+            log.info("开始统计 {} 站 {}天达标率", date, it.getStation());
             ExamineInfo examineInfo = new ExamineInfo();
             examineInfo.setStationId(it.getId());
             examineInfo.setAssPer(PeriodEnum.DAY);
@@ -103,9 +103,9 @@ public class StationDataTask {
             examineInfoByYear.setRecTime(LocalDateTime.now());
             int dayOfPer = 0;
             if (per == PeriodEnum.MONTH) {
-                dayOfPer = startTime.getDayOfMonth();
+                dayOfPer = LocalDate.now().getDayOfMonth();
             } else if (per == PeriodEnum.YEAR) {
-                dayOfPer = startTime.getDayOfYear();
+                dayOfPer = LocalDate.now().getDayOfYear();
             }
             // 如果是第一天，就不用重复统计了，当前examineInfo就是这一天的
             // 否则就是之前的没统计到，需要重新从第一天开始统计
@@ -113,7 +113,7 @@ public class StationDataTask {
                 examineInfoByYear.setEcoFlow(examineInfo.getEcoFlow());
                 examineInfoByYear.setEcoOnline(examineInfo.getEcoOnline());
             } else {
-                stationRange(startTime, endTime, examineInfo, vouchFlow);
+                stationRange(startTime, endTime, examineInfoByYear, vouchFlow);
             }
             examineInfoService.insert(examineInfoByYear);
         } else {

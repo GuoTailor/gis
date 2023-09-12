@@ -28,6 +28,11 @@ logging:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    defaultModelExpandDepth: 4
+    validatorUrl: none
+    persistAuthorization: true
+    use-root-path: true
+    filter: true
   api-docs:
     groups:
       enabled: true

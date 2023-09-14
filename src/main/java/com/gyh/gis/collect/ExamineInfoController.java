@@ -2,9 +2,11 @@ package com.gyh.gis.collect;
 
 import com.gyh.gis.dto.ResponseInfo;
 import com.gyh.gis.dto.req.ExamineReq;
+import com.gyh.gis.dto.req.SummarizeReq;
 import com.gyh.gis.dto.req.TrendReq;
 import com.gyh.gis.dto.resp.ExamineResp;
 import com.gyh.gis.dto.resp.StatisticResp;
+import com.gyh.gis.dto.resp.SummarizeResp;
 import com.gyh.gis.service.ExamineInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +28,15 @@ import java.util.List;
 public class ExamineInfoController {
     @Autowired
     private ExamineInfoService examineInfoService;
+
+    /**
+     * 查询综合概览
+     */
+    @Operation(summary = "查询综合概览")
+    @PostMapping("/summarize")
+    public ResponseInfo<SummarizeResp> selectSummarize(@RequestBody @Valid SummarizeReq req) {
+        return ResponseInfo.ok(examineInfoService.selectSummarize(req));
+    }
 
     /**
      * 查询小时统计

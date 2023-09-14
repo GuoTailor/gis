@@ -7,6 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public enum PeriodEnum implements Messageable {
+    HOUR("小时"),
     DAY("日"),
     MONTH("月"),
     YEAR("年");

@@ -54,6 +54,7 @@ public class GetStationData {
                             );
                         } catch (Exception e) {
                             saveData(true, null, it);
+                            targetRateService.statistic(it.getId(), false);
                             log.error(e.getLocalizedMessage(), e);
                         }
                     } else {

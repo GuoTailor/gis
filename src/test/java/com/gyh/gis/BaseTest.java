@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -13,10 +15,16 @@ import java.util.List;
  */
 public class BaseTest {
     @Test
-    public void testTime() {
-        System.out.println(LocalDate.now());
-        System.out.println(LocalDate.now().atStartOfDay());
-        System.out.println(LocalDate.now().atTime(LocalTime.MAX));
+    public void testTime() throws InterruptedException {
+
+        HashMap<LocalDate, LocalDateTime> map = new HashMap<>();
+        for (int i = 0; i < 10; i++) {
+            System.out.println(map.size());
+            LocalDateTime now = LocalDateTime.now();
+            map.put(now.toLocalDate(), now);
+            Thread.sleep(1_000);
+        }
+        System.out.println(map);
     }
 
     @Test

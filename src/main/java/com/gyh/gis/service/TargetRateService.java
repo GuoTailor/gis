@@ -40,6 +40,7 @@ public class TargetRateService {
             targetRate = new TargetRate();
             targetRate.setStationId(stationId);
             targetRate.setDatatime(formData);
+            targetRate.setOnlineCount(0);
         }
         if (isOnline) {
             targetRate.setOnlineCount(targetRate.getOnlineCount() == null ? 1 : targetRate.getOnlineCount() + 1);

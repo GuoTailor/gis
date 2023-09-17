@@ -1,6 +1,8 @@
 package com.gyh.gis.domain;
 
 import java.math.BigDecimal;
+
+import com.gyh.gis.enums.CameraTypeEnum;
 import lombok.Data;
 
 /**
@@ -74,4 +76,24 @@ public class Station {
      * 流量范围
      */
     private Float range;
+
+    /**
+     * 水电站编码
+     */
+    private String code;
+
+    /**
+     * 相机ip地址
+     */
+    private String cameraIp;
+
+    /**
+     * 相机播放地址
+     */
+    private String playUrl;
+
+    /**
+     * 相机类型
+     */
+    private CameraTypeEnum cameraType;
 }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,11 @@ public class StationService {
     public List<Station> getAll() {
         var wrapper = Wrappers.<Station>query();
         return stationMapper.selectList(wrapper);
+    }
+
+    public Map<String, List<Station>> selectAllByGroup() {
+        List<Station> stations = stationMapper.selectList(Wrappers.query());
+        return stations.stream().collect(Collectors.groupingBy(Station::getArea));
     }
 
     /**

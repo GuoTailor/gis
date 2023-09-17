@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,8 +56,8 @@ public class BaseTest {
 
     @Test
     public void testTime2() throws ParseException {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(df.parse("2022-10-12 11:20:27").getTime());
-        System.out.println(df.parse("2022-10-12 13:00:51").getTime());
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH-mm-ss-");
+        System.out.println(fmt.format(LocalDateTime.now()));
+//        System.out.println(df.parse("2022-10-12 13:00:51").getTime());
     }
 }

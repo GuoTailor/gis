@@ -1,11 +1,14 @@
 package com.gyh.gis.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gyh.gis.domain.Device10minuteHistory;
 import com.gyh.gis.domain.DeviceDayHistory;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.DeviceData;
+import com.gyh.gis.dto.req.AlarmImgReq;
+import com.gyh.gis.dto.resp.AlarmImgResp;
 import com.gyh.gis.dto.resp.DeviceAlarmInfoResp;
 import com.gyh.gis.dto.resp.DeviceAlarmListResp;
 import com.gyh.gis.enums.AlarmStationEnum;
@@ -21,6 +24,7 @@ import com.gyh.gis.util.AssertUtils;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -28,9 +32,12 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -40,7 +47,8 @@ import java.util.stream.Collectors;
 public class DeviceHistoryData {
     @Resource
     private Device10minuteHistoryMapper minuteHistoryMapper;
-
+    @Value("${gis.pic-path}")
+    private String picPath;
     @Resource
     private DeviceDayHistoryMapper dayHistoryMapper;
 
@@ -81,7 +89,7 @@ public class DeviceHistoryData {
         return selectByRange(startTime, endTime, stationId);
     }
 
-    public  List<Device10minuteHistory> selectByRange(LocalDateTime startTime, LocalDateTime endTime, Integer stationId) {
+    public List<Device10minuteHistory> selectByRange(LocalDateTime startTime, LocalDateTime endTime, Integer stationId) {
         var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
         if (CollectionUtils.isEmpty(tableSharding)) return List.of();
         ArrayList<Device10minuteHistory> result = new ArrayList<>();
@@ -209,6 +217,46 @@ public class DeviceHistoryData {
                 .setCreateTime(LocalDateTime.now()));
         String tableName = execute.getTableName();
         return dayHistoryMapper.insertSelective(dayHistory, tableName);
+    }
+
+    /**
+     * 查询报警截图
+     */
+    public List<AlarmImgResp> selectAlarmImg(AlarmImgReq req) {
+        var tableSharding = determineTableNameForNewExe.getAllSharding(Device10minuteHistory.class);
+        if (CollectionUtils.isEmpty(tableSharding)) return List.of();
+        LambdaQueryWrapper<Station> wrapper = Wrappers.lambdaQuery(Station.class)
+                .eq(StringUtils.hasText(req.getArea()), Station::getArea, req.getArea())
+                .like(StringUtils.hasText(req.getStation()), Station::getStation, req.getStation());
+
+        List<Station> stations = stationMapper.selectList(wrapper);
+        Map<Integer, Station> collect = stations.stream().collect(Collectors.toMap(Station::getId, Function.identity()));
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH-mm-ss-");
+        List<AlarmImgResp> result = new LinkedList<>();
+        for (ShardingTable shardingTable : tableSharding) {
+            List<Device10minuteHistory> deviceData = minuteHistoryMapper.selectAllByTime(req.getStartTime(), req.getEndTime(), StateEnum.ALARM, null, collect.keySet(), shardingTable.getTableName());
+            if (CollectionUtils.isEmpty(deviceData)) continue;
+            deviceData.forEach(it -> {
+                AlarmImgResp data = new AlarmImgResp();
+                data.setId(it.getId());
+                data.setAlarmValue(it.getValue());
+                data.setAlarmTime(it.getTime());
+                Station station = collect.get(it.getStationId());
+                data.setArea(station.getArea());
+                data.setEvaluate(station.getFlow());
+                data.setStation(station.getStation());
+                String format = fmt.format(it.getTime());
+                data.setLocalFilePath(picPath + format + station.getId() + ".jpg");
+                data.setImgDescribe(it.getScreenshotUrl());
+                result.add(data);
+            });
+            Device10minuteHistory first = minuteHistoryMapper.selectFirst(null, shardingTable.getTableName());
+            if (first == null) continue;
+            // 如果开始时间在表的第一条时间之后就认为数据查找完毕，没有必要查询下一张表
+            if (req.getStartTime().isAfter(first.getTime())) break;
+        }
+        result.sort((o1, o2) -> o2.getAlarmTime().compareTo(o1.getAlarmTime()));
+        return result;
     }
 
 }

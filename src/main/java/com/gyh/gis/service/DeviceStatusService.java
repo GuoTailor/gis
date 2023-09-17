@@ -15,10 +15,12 @@ import com.gyh.gis.support.shardingtable.executor.DetermineTableNameForNewExe;
 import com.gyh.gis.support.shardingtable.executor.input.DetermineTableNameForNewInput;
 import com.gyh.gis.support.shardingtable.executor.output.DetermineTableNameForNewOutput;
 import com.gyh.gis.util.AssertUtils;
+import com.gyh.gis.util.VideoUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -42,6 +44,8 @@ public class DeviceStatusService {
     private DetermineTableNameForNewExe determineTableNameForNewExe;
     @Resource
     private Device10minuteHistoryMapper minuteHistoryMapper;
+    @Value("${gis.pic-path}")
+    private String picPath;
 
     /**
      * 有就更新，没有就新增
@@ -96,6 +100,8 @@ public class DeviceStatusService {
                 minuteHistory.setCancelAlarm(false);
                 minuteHistory.setCancelTime(null);
                 minuteHistory.setScreenshotUrl(req.getScreenshotUrl());
+                String imgPath = VideoUtil.saveImg(station.getId(), picPath, station.getPlayUrl());
+                minuteHistory.setScreenshotUrl(imgPath);
             } else {
                 minuteHistory.setAlarmState(StateEnum.NORMAL);
                 minuteHistory.setCancelAlarm(true);

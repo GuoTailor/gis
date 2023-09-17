@@ -6,9 +6,12 @@ spring:
     allow-circular-references: true
   datasource:
     username: postgres
-    password: admin
+    password: 7G6TrOSimQSq0BHi
     url: jdbc:postgresql://127.0.0.1:5432/traffic_policing?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
     driver-class-name: org.postgresql.Driver
+  web:
+    resources:
+      static-locations: file:${gis.pic-path}, classpath:/static
   data:
     redis:
       host: localhost
@@ -61,3 +64,4 @@ gis:
         originTableName: test
         createShardingTableSQLFile: classpath:/test.sql
         policyType: NEVER
+  pic-path: ./pic/

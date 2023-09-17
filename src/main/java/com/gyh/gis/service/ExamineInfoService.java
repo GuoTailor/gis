@@ -15,6 +15,7 @@ import com.gyh.gis.dto.resp.SummarizeResp;
 import com.gyh.gis.enums.PeriodEnum;
 import com.gyh.gis.mapper.ExamineInfoMapper;
 import com.gyh.gis.mapper.StationMapper;
+import com.gyh.gis.util.AssertUtils;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,14 +78,18 @@ public class ExamineInfoService {
         return stations.parallelStream().map(station -> {
             TargetRate targetRates = targetRateService.selectByStationIdAndTime(startTime, station.getId());
             List<Device10minuteHistory> device10minuteHistories = deviceHistoryData.selectByRange(startTime, enTime, station.getId());
-            BigDecimal flow = device10minuteHistories.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+            long flow = device10minuteHistories.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0 ).count();
             StatisticResp statisticResp = new StatisticResp();
             statisticResp.setArea(station.getArea());
             statisticResp.setStation(station.getStation());
             statisticResp.setStationId(station.getId());
             statisticResp.setTime(startTime);
-            statisticResp.setOnlineTargetRate(BigDecimal.valueOf(targetRates.getTargetRate() == null ? 0 : targetRates.getTargetRate()));
-            statisticResp.setFlowTargetRate(flow.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP));
+            statisticResp.setOnlineTargetRate(BigDecimal.valueOf((targetRates == null || targetRates.getTargetRate() == null) ? 0 : targetRates.getTargetRate()));
+            if (CollectionUtils.isEmpty(device10minuteHistories)) {
+                statisticResp.setFlowTargetRate(BigDecimal.ZERO);
+            } else {
+                statisticResp.setFlowTargetRate(new BigDecimal(flow).divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP));
+            }
             return statisticResp;
         }).toList();
     }
@@ -112,6 +117,9 @@ public class ExamineInfoService {
                 .eq(StringUtils.hasText(req.getStation()), Station::getStation, req.getStation())
                 .eq(StringUtils.hasText(req.getArea()), Station::getArea, req.getArea()));
         Map<Integer, Station> idMap = stations.stream().collect(Collectors.toMap(Station::getId, Function.identity()));
+        if (CollectionUtils.isEmpty(idMap)) {
+            return List.of();
+        }
         List<ExamineInfo> examineInfos = examineInfoMapper.selectList(new LambdaQueryWrapper<>(ExamineInfo.class)
                 .between(ExamineInfo::getAssStart, startTime, endTime)
                 .eq(ExamineInfo::getAssPer, per)
@@ -145,6 +153,8 @@ public class ExamineInfoService {
         List<Device10minuteHistory> device10minuteHistories = deviceHistoryData.selectByRange(req.getStartTime(), req.getEndTime(), req.getStationId());
         Map<String, List<Device10minuteHistory>> flow = device10minuteHistories.stream().collect(Collectors.groupingBy(it -> fmt.format(it.getTime())));
         List<StatisticResp> resp = new LinkedList<>();
+        Station station = stationMapper.selectById(req.getStationId());
+        AssertUtils.notNull(station, "站点不存在" + req.getStationId());
         LocalDateTime time = req.getStartTime().withMinute(0).withSecond(0).withNano(0);
         while (!req.getEndTime().isBefore(time)) {
             String formatTime = fmt.format(time);
@@ -154,8 +164,12 @@ public class ExamineInfoService {
             Float onlineRate = online.get(formatTime);
             statisticResp.setOnlineTargetRate(BigDecimal.valueOf(onlineRate == null ? 0 : onlineRate));
             List<Device10minuteHistory> historyList = flow.get(formatTime);
-            BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-            statisticResp.setFlowTargetRate(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP));
+            if (historyList == null) {
+                statisticResp.setFlowTargetRate(BigDecimal.ZERO);
+            } else {
+                long flowRate = historyList.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0 ).count();
+                statisticResp.setFlowTargetRate(new BigDecimal(flowRate).divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP));
+            }
             resp.add(statisticResp);
             time = time.plusHours(1);
         }
@@ -218,10 +232,14 @@ public class ExamineInfoService {
                 target.setTime(time);
                 Float onlineRate = online.get(formatTime);
                 if (onlineRate == null) onlineRate = 0f;
-                target.setEcoFlow(onlineRate.compareTo(100F) >= 0);
+                target.setEcoOnline(onlineRate.compareTo(100F) >= 0);
                 List<Device10minuteHistory> historyList = flow.get(formatTime);
-                BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-                target.setEcoFlow(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP).compareTo(it.getFlow()) <= 0);
+                if (historyList == null) {
+                    target.setEcoFlow(false);
+                } else {
+                    BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    target.setEcoFlow(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP).compareTo(it.getFlow()) <= 0);
+                }
                 resp.add(target);
                 time = time.plusHours(1);
             }
@@ -301,8 +319,12 @@ public class ExamineInfoService {
                     Float onlineRate = online.get(formatTime);
                     statisticResp.setOnlineTargetRate(BigDecimal.valueOf(onlineRate == null ? 0 : onlineRate));
                     List<Device10minuteHistory> historyList = flow.get(formatTime);
-                    BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    statisticResp.setFlowTargetRate(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP));
+                    if (historyList == null) {
+                        statisticResp.setFlowTargetRate(BigDecimal.ZERO);
+                    } else {
+                        BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        statisticResp.setFlowTargetRate(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP));
+                    }
                     StatisticResp old = mapCache.put(formatTime, statisticResp);
                     if (old != null) {
                         // 先累加，最后在求平均值
@@ -337,8 +359,8 @@ public class ExamineInfoService {
                 BigDecimal onlineTargetRate = BigDecimal.ZERO;
                 BigDecimal flowTargetRate = BigDecimal.ZERO;
                 for (ExamineInfo examineInfo : v) {
-                    onlineTargetRate = onlineTargetRate.add(examineInfo.getOnlineTargetRate());
-                    flowTargetRate = flowTargetRate.add(examineInfo.getFlowTargetRate());
+                    onlineTargetRate = onlineTargetRate.add(examineInfo.getOnlineTargetRate() == null ? BigDecimal.ZERO : examineInfo.getOnlineTargetRate());
+                    flowTargetRate = flowTargetRate.add(examineInfo.getFlowTargetRate() == null ? BigDecimal.ZERO : examineInfo.getFlowTargetRate());
                 }
                 BigDecimal size = new BigDecimal(v.size());
                 statisticResp.setFlowTargetRate(flowTargetRate.divide(size, 4, RoundingMode.HALF_UP));
@@ -347,8 +369,13 @@ public class ExamineInfoService {
                 trend.add(statisticResp);
             });
             resp.setTrend(trend);
-            resp.setFlowTargetRate(trend.stream().map(StatisticResp::getFlowTargetRate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).divide(new BigDecimal(examineMap.size()), 4, RoundingMode.HALF_UP));
-            resp.setOnlineTargetRate(trend.stream().map(StatisticResp::getFlowTargetRate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).divide(new BigDecimal(examineMap.size()), 4, RoundingMode.HALF_UP));
+            if (CollectionUtils.isEmpty(examineMap)) {
+                resp.setFlowTargetRate(BigDecimal.ZERO);
+                resp.setOnlineTargetRate(BigDecimal.ZERO);
+            } else {
+                resp.setFlowTargetRate(trend.stream().map(StatisticResp::getFlowTargetRate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).divide(new BigDecimal(examineMap.size()), 4, RoundingMode.HALF_UP));
+                resp.setOnlineTargetRate(trend.stream().map(StatisticResp::getFlowTargetRate).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).divide(new BigDecimal(examineMap.size()), 4, RoundingMode.HALF_UP));
+            }
         }
         return resp;
     }

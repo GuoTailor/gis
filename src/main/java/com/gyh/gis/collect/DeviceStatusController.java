@@ -4,7 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.DeviceData;
 import com.gyh.gis.dto.ResponseInfo;
+import com.gyh.gis.dto.req.AlarmImgReq;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
+import com.gyh.gis.dto.resp.AlarmImgResp;
 import com.gyh.gis.dto.resp.DeviceAlarmListResp;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
 import com.gyh.gis.enums.AlarmStationEnum;
@@ -24,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * create by GYH on 2022/9/26
@@ -102,5 +105,17 @@ public class DeviceStatusController {
     @GetMapping("/getAllArea")
     public ResponseInfo<List<String>> getAllArea() {
         return ResponseInfo.ok(stationService.getAllArea());
+    }
+
+    @Operation(summary = "查询报警截图")
+    @PostMapping("/alarm/img")
+    public ResponseInfo<List<AlarmImgResp>> selectAlarmImg(@RequestBody @Valid AlarmImgReq req) {
+        return ResponseInfo.ok(deviceHistoryData.selectAlarmImg(req));
+    }
+
+    @Operation(summary = "分组返回站点")
+    @PostMapping("/group")
+    public ResponseInfo<Map<String, List<Station>>> selectAllByGroup() {
+        return ResponseInfo.ok(stationService.selectAllByGroup());
     }
 }

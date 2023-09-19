@@ -45,6 +45,7 @@ public class StationDataTask {
             log.info("开始统计 {} 站 {}天达标率", date, it.getStation());
             ExamineInfo examineInfo = new ExamineInfo();
             examineInfo.setStationId(it.getId());
+            examineInfo.setHystCode(it.getCode());
             examineInfo.setAssPer(PeriodEnum.DAY);
             LocalDateTime now = LocalDateTime.now();
             examineInfo.setRecTime(now);
@@ -156,13 +157,13 @@ public class StationDataTask {
         };
         var device10minuteHistories = deviceHistoryData.selectByRange(startTime, endTime, examineInfo.getStationId());
         if (!CollectionUtils.isEmpty(device10minuteHistories)) {
-            BigDecimal sum = device10minuteHistories
+            long count = device10minuteHistories
                     .stream()
                     .peek(device10minuteHistory -> consumer.accept(device10minuteHistory.getTime()))
-                    .map(Device10minuteHistory::getValue)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 4, RoundingMode.HALF_UP);
-            examineInfo.setEcoFlow(vouchFlow.compareTo(flow) <= 0);
+                    .filter(it -> it.getValue().compareTo(vouchFlow) >= 0)
+                    .count();
+            BigDecimal flow = new BigDecimal(count).divide(new BigDecimal(device10minuteHistories.size()), 4, RoundingMode.HALF_UP);
+            examineInfo.setEcoFlow(count == device10minuteHistories.size());
             examineInfo.setFlowTargetRate(flow);
         }
         List<TargetRate> targetRates = targetRateService.selectByRange(startTime, endTime, examineInfo.getStationId());

@@ -26,6 +26,8 @@ public class AlarmImgResp {
     @Schema(description = "图片本地地址")
     private String localFilePath;
     @Schema(description = "图片url")
+    private String imgUrl;
+    @Schema(description = "监管图像描述")
     private String imgDescribe;
     @Schema(description = "报警时间")
     private LocalDateTime alarmTime;

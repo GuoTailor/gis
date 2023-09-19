@@ -78,7 +78,7 @@ public class ExamineInfoService {
         return stations.parallelStream().map(station -> {
             TargetRate targetRates = targetRateService.selectByStationIdAndTime(startTime, station.getId());
             List<Device10minuteHistory> device10minuteHistories = deviceHistoryData.selectByRange(startTime, enTime, station.getId());
-            long flow = device10minuteHistories.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0 ).count();
+            long flow = device10minuteHistories.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0).count();
             StatisticResp statisticResp = new StatisticResp();
             statisticResp.setArea(station.getArea());
             statisticResp.setStation(station.getStation());
@@ -167,7 +167,7 @@ public class ExamineInfoService {
             if (historyList == null) {
                 statisticResp.setFlowTargetRate(BigDecimal.ZERO);
             } else {
-                long flowRate = historyList.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0 ).count();
+                long flowRate = historyList.stream().filter(it -> it.getValue().compareTo(station.getFlow()) >= 0).count();
                 statisticResp.setFlowTargetRate(new BigDecimal(flowRate).divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP));
             }
             resp.add(statisticResp);

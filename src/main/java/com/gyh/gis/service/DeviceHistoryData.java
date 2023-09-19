@@ -247,7 +247,8 @@ public class DeviceHistoryData {
                 data.setStation(station.getStation());
                 String format = fmt.format(it.getTime());
                 data.setLocalFilePath(picPath + format + station.getId() + ".jpg");
-                data.setImgDescribe(it.getScreenshotUrl());
+                data.setImgUrl(it.getScreenshotUrl());
+                data.setImgDescribe("超标报警");
                 result.add(data);
             });
             Device10minuteHistory first = minuteHistoryMapper.selectFirst(null, shardingTable.getTableName());

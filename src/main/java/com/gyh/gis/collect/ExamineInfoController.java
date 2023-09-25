@@ -1,5 +1,6 @@
 package com.gyh.gis.collect;
 
+import com.alibaba.excel.EasyExcel;
 import com.gyh.gis.dto.ResponseInfo;
 import com.gyh.gis.dto.req.ExamineReq;
 import com.gyh.gis.dto.req.SummarizeReq;
@@ -7,16 +8,19 @@ import com.gyh.gis.dto.req.TrendReq;
 import com.gyh.gis.dto.resp.ExamineResp;
 import com.gyh.gis.dto.resp.StatisticResp;
 import com.gyh.gis.dto.resp.SummarizeResp;
+import com.gyh.gis.enums.PeriodEnum;
+import com.gyh.gis.exception.BusinessException;
 import com.gyh.gis.service.ExamineInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -67,6 +71,23 @@ public class ExamineInfoController {
     public ResponseInfo<List<StatisticResp>> selectStatisticByYear(@RequestBody @Valid ExamineReq req) {
         List<StatisticResp> statisticResps = examineInfoService.selectStatisticByYear(req);
         return ResponseInfo.ok(statisticResps);
+    }
+
+    @Operation(summary = "导出统计")
+    @PostMapping("/output/statistic/{per}")
+    public void outputStatistic(HttpServletResponse response, @PathVariable PeriodEnum per, @RequestBody @Valid ExamineReq req) throws IOException {
+        List<StatisticResp> statisticResps = switch (per) {
+            case HOUR -> examineInfoService.selectStatisticByHour(req);
+            case DAY -> examineInfoService.selectStatisticByDay(req);
+            case MONTH -> examineInfoService.selectStatisticByMonth(req);
+            case YEAR -> examineInfoService.selectStatisticByYear(req);
+        };
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+        String fileName = URLEncoder.encode(req.getTime().toString(), StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        EasyExcel.write(response.getOutputStream(), StatisticResp.class).sheet("sheet1").doWrite(statisticResps);
     }
 
     /**
@@ -124,4 +145,20 @@ public class ExamineInfoController {
         return ResponseInfo.ok(resps);
     }
 
+    @Operation(summary = "导出考核")
+    @PostMapping("/output/examine/{per}")
+    public void outputExamine(HttpServletResponse response, @PathVariable PeriodEnum per, @RequestBody @Valid ExamineReq req) throws IOException {
+        List<ExamineResp> resps = switch (per) {
+            case HOUR -> throw new BusinessException("不支持小时考核导出");
+            case DAY -> examineInfoService.selectExamineByDay(req);
+            case MONTH -> examineInfoService.selectExamineByMonth(req);
+            case YEAR -> examineInfoService.selectExamineByYear(req);
+        };
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+        String fileName = URLEncoder.encode(req.getTime().toString(), StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        EasyExcel.write(response.getOutputStream(), ExamineResp.class).sheet("sheet1").doWrite(resps);
+    }
 }

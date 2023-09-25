@@ -18,6 +18,8 @@ public interface TargetRateMapper extends BaseMapper<TargetRate> {
 
     TargetRate selectByStationIdAndTime(@Param("stationId") Integer stationId, @Param("time") LocalDateTime time);
 
+    TargetRate selectByLastStationId(@Param("stationId") Integer stationId);
+
     int updateByPrimaryKeySelective(TargetRate record);
 
     int updateByPrimaryKey(TargetRate record);

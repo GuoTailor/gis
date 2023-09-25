@@ -3,12 +3,20 @@ package com.gyh.gis.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.domain.Station;
+import com.gyh.gis.domain.TargetRate;
+import com.gyh.gis.dto.resp.StationVideo;
+import com.gyh.gis.enums.StateEnum;
+import com.gyh.gis.mapper.DeviceStatusMapper;
 import com.gyh.gis.mapper.StationMapper;
+import com.gyh.gis.mapper.TargetRateMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +29,8 @@ import java.util.stream.Collectors;
 public class StationService {
     @Resource
     private StationMapper stationMapper;
+    @Resource
+    private DeviceStatusMapper deviceStatusMapper;
 
     public Page<Station> page() {
         Page<Station> page = new Page<Station>().setCurrent(1).setSize(10);
@@ -42,9 +52,31 @@ public class StationService {
         return stationMapper.selectList(wrapper);
     }
 
-    public Map<String, List<Station>> selectAllByGroup() {
+    public Map<String, List<StationVideo>> selectAllByGroup() {
         List<Station> stations = stationMapper.selectList(Wrappers.query());
-        return stations.stream().collect(Collectors.groupingBy(Station::getArea));
+
+        return stations.parallelStream()
+                .map(it -> {
+                    StationVideo video = new StationVideo();
+                    BeanUtils.copyProperties(it, video);
+                    DeviceStatus deviceStatus = deviceStatusMapper.selectOne(Wrappers.lambdaQuery(DeviceStatus.class).eq(DeviceStatus::getStationId, it.getId()).last("limit 1"));
+                    if (deviceStatus != null) {
+                        video.setValue(deviceStatus.getValue());
+                        video.setOnLine(deviceStatus.getValue() != null && deviceStatus.getValue().compareTo(BigDecimal.ZERO) > 0);
+                        if (deviceStatus.getErrorState() == StateEnum.ERROR) {
+                            video.setAlarmState(StateEnum.ERROR);
+                        } else if (deviceStatus.getValue().compareTo(it.getFlow()) < 0) {
+                            video.setAlarmState(StateEnum.ALARM);
+                        } else {
+                            video.setAlarmState(StateEnum.NORMAL);
+                        }
+                    } else {
+                        video.setOnLine(false);
+                        video.setAlarmState(StateEnum.ERROR);
+                    }
+                    return video;
+                })
+                .collect(Collectors.groupingBy(StationVideo::getArea));
     }
 
     /**

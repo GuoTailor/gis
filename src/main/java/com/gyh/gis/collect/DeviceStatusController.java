@@ -9,6 +9,7 @@ import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.dto.resp.AlarmImgResp;
 import com.gyh.gis.dto.resp.DeviceAlarmListResp;
 import com.gyh.gis.dto.resp.DeviceStatusResp;
+import com.gyh.gis.dto.resp.StationVideo;
 import com.gyh.gis.enums.AlarmStationEnum;
 import com.gyh.gis.service.DeviceHistoryData;
 import com.gyh.gis.service.DeviceStatusService;
@@ -115,7 +116,7 @@ public class DeviceStatusController {
 
     @Operation(summary = "分组返回站点")
     @PostMapping("/group")
-    public ResponseInfo<Map<String, List<Station>>> selectAllByGroup() {
+    public ResponseInfo<Map<String, List<StationVideo>>> selectAllByGroup() {
         return ResponseInfo.ok(stationService.selectAllByGroup());
     }
 }

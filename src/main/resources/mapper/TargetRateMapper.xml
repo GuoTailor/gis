@@ -34,6 +34,14 @@
         where station_id = #{stationId}
         and datatime = #{time}
     </select>
+    <select id="selectByLastStationId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from target_rate
+        where station_id = #{stationId}
+        order by datatime desc
+        limit 1
+    </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
         <!--@mbg.generated-->
         delete
@@ -116,6 +124,5 @@
             total_count  = #{totalCount,jdbcType=SMALLINT}
         where id = #{id,jdbcType=INTEGER}
     </update>
-
 
 </mapper>

@@ -15,17 +15,21 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * create by GYH on 2023/9/13
  */
+@Slf4j
 @RestController
 @RequestMapping("/examine")
 @Tag(name = "考核统计状态")
@@ -148,17 +152,93 @@ public class ExamineInfoController {
     @Operation(summary = "导出考核")
     @PostMapping("/output/examine/{per}")
     public void outputExamine(HttpServletResponse response, @PathVariable PeriodEnum per, @RequestBody @Valid ExamineReq req) throws IOException {
-        List<ExamineResp> resps = switch (per) {
-            case HOUR -> throw new BusinessException("不支持小时考核导出");
-            case DAY -> examineInfoService.selectExamineByDay(req);
-            case MONTH -> examineInfoService.selectExamineByMonth(req);
-            case YEAR -> examineInfoService.selectExamineByYear(req);
-        };
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setCharacterEncoding("utf-8");
-        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
-        String fileName = URLEncoder.encode(req.getTime().toString(), StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-        EasyExcel.write(response.getOutputStream(), ExamineResp.class).sheet("sheet1").doWrite(resps);
+        try {
+            List<ExamineResp> resps = switch (per) {
+                case HOUR -> throw new BusinessException("不支持小时考核导出");
+                case DAY -> examineInfoService.selectExamineByDay(req);
+                case MONTH -> examineInfoService.selectExamineByMonth(req);
+                case YEAR -> examineInfoService.selectExamineByYear(req);
+            };
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+            String fileName = URLEncoder.encode(req.getTime().toString(), StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            List<List<String>> head = head(resps, per);
+            EasyExcel.write(response.getOutputStream()).head(head).sheet("sheet1").doWrite(data(resps, head, per));
+        } catch (Exception e) {
+            log.error("导出考核失败", e);
+        }
     }
+
+    private final DateTimeFormatter fmtMonth = DateTimeFormatter.ofPattern("yyyy-MM月");
+    private final DateTimeFormatter fmtDay = DateTimeFormatter.ofPattern("yyyy-MM-dd日");
+    private final DateTimeFormatter fmtHour = DateTimeFormatter.ofPattern("yyyy-MM-dd HH时");
+
+    private List<List<String>> head(List<ExamineResp> resps, PeriodEnum per) {
+        List<List<String>> list = new ArrayList<>();
+        list.add(List.of("站点名称"));
+        list.add(List.of("所属流域"));
+        Set<String> times = new TreeSet<>();
+        for (ExamineResp resp : resps) {
+            for (ExamineResp.Target target : resp.getTargets()) {
+                String time = switch (per) {
+                    case HOUR -> fmtHour.format(target.getTime());
+                    case DAY -> fmtDay.format(target.getTime());
+                    case MONTH -> fmtMonth.format(target.getTime());
+                    case YEAR -> "";
+                };
+                times.add(time + "达标情况");
+                times.add(time + "在线情况");
+            }
+        }
+        list.addAll(times.stream().map(List::of).toList());
+        list.add(List.of("下泄达标率"));
+        list.add(List.of("设备在线率"));
+        return list;
+    }
+
+    private List<List<String>> data(List<ExamineResp> resps, List<List<String>> head, PeriodEnum per) {
+        List<String> heads = head.subList(2, head.size() - 2).stream().flatMap(List::stream).toList();
+        List<List<String>> dataList = new ArrayList<>();
+        for (ExamineResp resp : resps) {
+            List<String> data = new ArrayList<>();
+            dataList.add(data);
+            data.add(resp.getStation());
+            data.add(resp.getArea());
+            Map<String, ExamineResp.Target> map = new HashMap<>();
+            for (ExamineResp.Target target : resp.getTargets()) {
+                String time = switch (per) {
+                    case HOUR -> fmtHour.format(target.getTime());
+                    case DAY -> fmtDay.format(target.getTime());
+                    case MONTH -> fmtMonth.format(target.getTime());
+                    case YEAR -> "";
+                };
+                map.put(time, target);
+            }
+            for (int i = 0; i < heads.size(); i += 2) {
+                int length = heads.get(i).length();
+                ExamineResp.Target target = map.get(heads.get(i).substring(0, length - 4));
+                if (target != null) {
+                    data.add(Boolean.TRUE.equals(target.getEcoFlow()) ? "达标" : "不达标");
+                    data.add(Boolean.TRUE.equals(target.getEcoOnline()) ? "合格" : "不合格");
+                } else {
+                    data.add("");
+                    data.add("");
+                }
+            }
+            if (resp.getFlowTargetRate() != null) {
+                data.add(resp.getFlowTargetRate().toPlainString());
+            } else {
+                data.add("0");
+            }
+            if (resp.getOnlineTargetRate() != null) {
+                data.add(resp.getOnlineTargetRate().toPlainString());
+            } else {
+                data.add("0");
+            }
+        }
+        return dataList;
+    }
+
 }

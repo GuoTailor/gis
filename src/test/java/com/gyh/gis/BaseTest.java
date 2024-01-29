@@ -17,15 +17,8 @@ import java.util.List;
 public class BaseTest {
     @Test
     public void testTime() throws InterruptedException {
-
-        HashMap<LocalDate, LocalDateTime> map = new HashMap<>();
-        for (int i = 0; i < 10; i++) {
-            System.out.println(map.size());
-            LocalDateTime now = LocalDateTime.now();
-            map.put(now.toLocalDate(), now);
-            Thread.sleep(1_000);
-        }
-        System.out.println(map);
+        LocalDateTime time = LocalDateTime.now().plusMonths(1).withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        System.out.println(time);
     }
 
     @Test
@@ -56,7 +49,7 @@ public class BaseTest {
 
     @Test
     public void testTime2() throws ParseException {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH-mm-ss-");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy/MM/dd月");
         System.out.println(fmt.format(LocalDateTime.now()));
 //        System.out.println(df.parse("2022-10-12 13:00:51").getTime());
     }

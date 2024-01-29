@@ -38,10 +38,23 @@ public class StationDataTask {
     @Scheduled(cron = "1 0 0 * * ?")
     public void configureTasks() {
         var date = LocalDate.now().minusDays(1);
-        log.info("开始统计 {} 每个站点流量", date);
+        log.info("开始统计 {} 每个站点流量》》》》》》》》》》》", date);
         List<Station> stationIds = stationService.getAll();
         stationIds.parallelStream().forEach(it -> {
-
+            var device10minuteHistories = deviceHistoryData.selectByOneDay(date, it.getId());
+            if (!CollectionUtils.isEmpty(device10minuteHistories)) {
+                BigDecimal sum = device10minuteHistories
+                        .stream()
+                        .map(Device10minuteHistory::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal flow = sum.divide(new BigDecimal(device10minuteHistories.size()), 3, RoundingMode.HALF_UP);
+                DeviceDayHistory dayHistory = new DeviceDayHistory();
+                dayHistory.setTime(date);
+                dayHistory.setValue(flow);
+                dayHistory.setStationId(device10minuteHistories.get(0).getStationId());
+                int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
+                if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), flow);
+            }
             log.info("开始统计 {} 站 {}天达标率", date, it.getStation());
             ExamineInfo examineInfo = new ExamineInfo();
             examineInfo.setStationId(it.getId());
@@ -54,14 +67,6 @@ public class StationDataTask {
             stationRange(startTime, endTime, examineInfo, it.getFlow());
             examineInfo.setStationCount(1);
             examineInfoService.insert(examineInfo);
-            if (examineInfo.getFlowTargetRate() != null) {
-                DeviceDayHistory dayHistory = new DeviceDayHistory();
-                dayHistory.setTime(date);
-                dayHistory.setValue(examineInfo.getFlowTargetRate());
-                dayHistory.setStationId(it.getId());
-                int i = deviceHistoryData.addDeviceHistoryData(dayHistory);
-                if (i == 0) log.warn("统计站点 {} 数据出错 value:{}", dayHistory.getId(), examineInfo.getFlowTargetRate());
-            }
             processingMonth(examineInfo, it.getFlow());
             processingYear(examineInfo, it.getFlow());
         });
@@ -72,7 +77,7 @@ public class StationDataTask {
      * 处理统计月
      */
     public void processingMonth(ExamineInfo examineInfo, BigDecimal vouchFlow) {
-        var data = LocalDate.now();
+        var data = LocalDate.now().minusDays(1);
         int dayOfMonth = data.getDayOfMonth();
         var startTime = data.minusDays(dayOfMonth - 1).atStartOfDay();
         var endTime = startTime.plusDays(data.lengthOfMonth()).minusNanos(1);
@@ -83,7 +88,7 @@ public class StationDataTask {
      * 处理统计年
      */
     public void processingYear(ExamineInfo examineInfo, BigDecimal vouchFlow) {
-        var data = LocalDate.now();
+        var data = LocalDate.now().minusDays(1);
         int dayOfYear = data.getDayOfYear();
         var startTime = data.minusDays(dayOfYear - 1).atStartOfDay();
         var endTime = startTime.plusDays(data.lengthOfYear()).minusNanos(1);
@@ -125,14 +130,14 @@ public class StationDataTask {
                     .add(examineInfo.getFlowTargetRate())
                     .divide(new BigDecimal(examineInfoByYear.getStationCount() + 1), 4, RoundingMode.HALF_UP);
             examineInfoByYear.setFlowTargetRate(flowTargetRate);
-            examineInfoByYear.setEcoFlow(vouchFlow.compareTo(flowTargetRate) <= 0);
+            examineInfoByYear.setEcoFlow(flowTargetRate.compareTo(new BigDecimal("0.997")) >= 0);
 
             BigDecimal onlineTargetRate = examineInfoByYear.getOnlineTargetRate()
                     .multiply(new BigDecimal(examineInfoByYear.getStationCount()))
                     .add(examineInfo.getOnlineTargetRate())
                     .divide(new BigDecimal(examineInfoByYear.getStationCount() + 1), 4, RoundingMode.HALF_UP);
             examineInfoByYear.setOnlineTargetRate(onlineTargetRate);
-            examineInfoByYear.setEcoOnline(onlineTargetRate.compareTo(new BigDecimal(100)) >= 0);
+            examineInfoByYear.setEcoOnline(onlineTargetRate.compareTo(new BigDecimal("0.997")) >= 0);
 
             examineInfoByYear.setStationCount(examineInfoByYear.getStationCount() + 1);
             examineInfoService.update(examineInfoByYear);
@@ -173,7 +178,7 @@ public class StationDataTask {
                     .map(TargetRate::getTargetRate)
                     .reduce(0F, Float::sum);
             Float targetRate = sum / targetRates.size();
-            examineInfo.setEcoOnline(targetRate.compareTo(100F) >= 0);
+            examineInfo.setEcoOnline(targetRate.compareTo(1F) >= 0);
             examineInfo.setOnlineTargetRate(new BigDecimal(targetRate).setScale(4, RoundingMode.HALF_UP));
         } else {
             consumer.accept(LocalDateTime.now());

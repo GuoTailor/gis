@@ -28,10 +28,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -213,12 +210,12 @@ public class ExamineInfoService {
      */
     public List<ExamineResp> selectExamineByDay(ExamineReq req) {
         List<StatisticResp> statisticResps = selectStatisticByDay(req);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
+        var startTime = req.getTime().toLocalDate().atStartOfDay();
+        var endTime = startTime.plusDays(1).minusNanos(1);
         return statisticResps.parallelStream().map(it -> {
             ExamineResp examineResp = new ExamineResp();
             BeanUtils.copyProperties(it, examineResp);
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
-            var startTime = req.getTime().toLocalDate().atStartOfDay();
-            var endTime = startTime.plusDays(1).minusNanos(1);
             List<TargetRate> targetRates = targetRateService.selectByRange(startTime, endTime, it.getStationId());
             // 不同小时的在线率
             Map<String, Float> online = targetRates.stream().collect(Collectors.toMap(targetRate -> fmt.format(targetRate.getDatatime()), TargetRate::getTargetRate));
@@ -232,13 +229,16 @@ public class ExamineInfoService {
                 target.setTime(time);
                 Float onlineRate = online.get(formatTime);
                 if (onlineRate == null) onlineRate = 0f;
-                target.setEcoOnline(onlineRate.compareTo(100F) >= 0);
+                target.setEcoOnline(onlineRate.compareTo(1F) >= 0);
                 List<Device10minuteHistory> historyList = flow.get(formatTime);
                 if (historyList == null) {
                     target.setEcoFlow(false);
                 } else {
-                    BigDecimal flowRate = historyList.stream().map(Device10minuteHistory::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    target.setEcoFlow(flowRate.divide(new BigDecimal(historyList.size()), 4, RoundingMode.HALF_UP).compareTo(it.getFlow()) <= 0);
+                    long count = device10minuteHistories.stream()
+                            .filter(d -> d.getValue().compareTo(it.getFlow()) >= 0)
+                            .count();
+                    BigDecimal flowRate = new BigDecimal(count).divide(new BigDecimal(device10minuteHistories.size()), 4, RoundingMode.HALF_UP);
+                    target.setEcoFlow(flowRate.compareTo(BigDecimal.ONE) >= 0);
                 }
                 resp.add(target);
                 time = time.plusHours(1);
@@ -250,46 +250,60 @@ public class ExamineInfoService {
 
     public List<ExamineResp> selectExamineByMonth(ExamineReq req) {
         List<StatisticResp> statisticResps = selectStatisticByMonth(req);
+        var startTime = req.getTime().toLocalDate().withDayOfMonth(1);
+        var endTime = startTime.plusMonths(1).minusDays(1);
         return statisticResps.parallelStream().map(it -> {
             ExamineResp examineResp = new ExamineResp();
             BeanUtils.copyProperties(it, examineResp);
-            var startTime = req.getTime().toLocalDate().withDayOfMonth(1);
-            var endTime = startTime.plusMonths(1).minusDays(1);
             List<ExamineInfo> examineInfos = examineInfoMapper.selectList(new LambdaQueryWrapper<>(ExamineInfo.class)
                     .between(ExamineInfo::getAssStart, startTime, endTime)
                     .eq(ExamineInfo::getAssPer, PeriodEnum.DAY)
-                    .eq(ExamineInfo::getStationId, it.getStationId()));
-            List<ExamineResp.Target> collect = examineInfos.stream().map(examineInfo -> {
-                ExamineResp.Target target = new ExamineResp.Target();
-                target.setTime(examineInfo.getAssStart());
-                target.setEcoOnline(examineInfo.getEcoOnline());
-                target.setEcoFlow(examineInfo.getEcoFlow());
-                return target;
-            }).collect(Collectors.toList());
-            examineResp.setTargets(collect);
+                    .eq(ExamineInfo::getStationId, it.getStationId())
+                    .orderByAsc(ExamineInfo::getAssStart));
+            Map<LocalDateTime, ExamineResp.Target> map = new HashMap<>();
+            examineInfos.stream().map(examineInfo -> {
+                        ExamineResp.Target target = new ExamineResp.Target();
+                        target.setTime(examineInfo.getAssStart());
+                        target.setEcoOnline(examineInfo.getEcoOnline());
+                        target.setEcoFlow(examineInfo.getEcoFlow());
+                        return target;
+                    })
+                    .forEach(examineInfo -> {
+                        LocalDateTime time = examineInfo.getTime().withHour(0).withMinute(0).withSecond(0).withNano(0);
+                        examineInfo.setTime(time);
+                        map.put(time, examineInfo);
+                    });
+            examineResp.setTargets(new ArrayList<>(map.values()));
             return examineResp;
         }).toList();
     }
 
     public List<ExamineResp> selectExamineByYear(ExamineReq req) {
         List<StatisticResp> statisticResps = selectStatisticByYear(req);
+        var startTime = req.getTime().toLocalDate().withDayOfYear(1);
+        var endTime = startTime.plusYears(1).minusDays(1);
         return statisticResps.parallelStream().map(it -> {
             ExamineResp examineResp = new ExamineResp();
             BeanUtils.copyProperties(it, examineResp);
-            var startTime = req.getTime().toLocalDate().withDayOfYear(1);
-            var endTime = startTime.plusYears(1).minusDays(1);
             List<ExamineInfo> examineInfos = examineInfoMapper.selectList(new LambdaQueryWrapper<>(ExamineInfo.class)
                     .between(ExamineInfo::getAssStart, startTime, endTime)
                     .eq(ExamineInfo::getAssPer, PeriodEnum.MONTH)
-                    .eq(ExamineInfo::getStationId, it.getStationId()));
-            List<ExamineResp.Target> collect = examineInfos.stream().map(examineInfo -> {
-                ExamineResp.Target target = new ExamineResp.Target();
-                target.setTime(examineInfo.getAssStart());
-                target.setEcoOnline(examineInfo.getEcoOnline());
-                target.setEcoFlow(examineInfo.getEcoFlow());
-                return target;
-            }).collect(Collectors.toList());
-            examineResp.setTargets(collect);
+                    .eq(ExamineInfo::getStationId, it.getStationId())
+                    .orderByAsc(ExamineInfo::getAssStart));
+            Map<LocalDateTime, ExamineResp.Target> map = new HashMap<>();
+            examineInfos.stream().map(examineInfo -> {
+                        ExamineResp.Target target = new ExamineResp.Target();
+                        target.setTime(examineInfo.getAssStart());
+                        target.setEcoOnline(examineInfo.getEcoOnline());
+                        target.setEcoFlow(examineInfo.getEcoFlow());
+                        return target;
+                    })
+                    .forEach(examineInfo -> {
+                        LocalDateTime time = examineInfo.getTime().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                        examineInfo.setTime(time);
+                        map.put(time, examineInfo);
+                    });
+            examineResp.setTargets(new ArrayList<>(map.values()));
             return examineResp;
         }).toList();
     }
@@ -352,7 +366,14 @@ public class ExamineInfoService {
                     .between(ExamineInfo::getAssStart, req.getStartTime(), req.getEndTime())
                     .eq(ExamineInfo::getAssPer, req.getPeriod())
                     .in(ExamineInfo::getStationId, stations.stream().map(Station::getId).toList()));
-            Map<LocalDate, List<ExamineInfo>> examineMap = examineInfos.stream().collect(Collectors.groupingBy(it -> it.getAssStart().toLocalDate()));
+            Map<LocalDate, List<ExamineInfo>> examineMap = switch (req.getPeriod()) {
+                case HOUR -> throw new RuntimeException("严重错误");
+                case DAY -> examineInfos.stream().collect(Collectors.groupingBy(it -> it.getAssStart().toLocalDate()));
+                case MONTH ->
+                        examineInfos.stream().collect(Collectors.groupingBy(it -> it.getAssStart().toLocalDate().withDayOfMonth(1)));
+                case YEAR ->
+                        examineInfos.stream().collect(Collectors.groupingBy(it -> it.getAssStart().toLocalDate().withDayOfYear(1)));
+            };
             List<StatisticResp> trend = new ArrayList<>();
             examineMap.forEach((k, v) -> {
                 StatisticResp statisticResp = new StatisticResp();

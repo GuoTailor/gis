@@ -37,10 +37,12 @@ public class GetStationData {
 
     @Scheduled(cron = "1 0/10 * * * ?")
     public void getData() {
+        log.info("定时任务开始获取水电站流量》》》》》》》》》》》");
         List<Station> stations = stationService.getAll();
         stations.parallelStream()
                 .filter(it -> StringUtils.hasLength(it.getIp()) && it.getPort() != null)
                 .forEach(it -> {
+                    log.info("{} 获取数据", it.getId());
                     GenericFutureListener<? extends Future<? super Void>> listener = future -> {
                         log.info("{} 发送{}", it.getId(), future.isSuccess() ? "成功" : "失败");
                         targetRateService.statistic(it.getId(), future.isSuccess());
@@ -74,7 +76,12 @@ public class GetStationData {
             for (int i = 1; i <= length; i++) {
                 data = (data << 8) + body[8 + i];
             }
-            double flow = (data * 0.001 - 4) / 16 * station.getRange().doubleValue();
+            double flow;
+            if (data > 4000) {
+                flow = (data * 0.001 - 4) / 16 * station.getRange().doubleValue();
+            } else {
+                flow = 0;
+            }
             req.setErrorState(StateEnum.NORMAL);
             req.setValue(new BigDecimal(flow));
         } else {

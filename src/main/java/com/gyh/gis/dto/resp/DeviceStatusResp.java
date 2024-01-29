@@ -78,7 +78,13 @@ public class DeviceStatusResp {
     /**
      * 标准值
      */
-    @Schema(description = " 标准值")
+    @Schema(description = "标准值")
     private BigDecimal evaluate;
+
+    /**
+     * 相机播放地址
+     */
+    @Schema(description = "相机播放地址")
+    private String playUrl;
 
 }

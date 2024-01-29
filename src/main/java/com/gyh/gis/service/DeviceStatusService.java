@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -145,7 +146,7 @@ public class DeviceStatusService {
         List<Station> stations = stationMapper.selectList(Wrappers.query());
         List<Integer> ids = stations.stream().map(Station::getId).collect(Collectors.toList());
         List<DeviceStatus> deviceStatusList = deviceStatusMapper.selectList(Wrappers.<DeviceStatus>query().in("station_id", ids));
-        Map<Integer, DeviceStatus> cache = deviceStatusList.stream().collect(Collectors.toMap(DeviceStatus::getStationId, it -> it));
+        Map<Integer, DeviceStatus> cache = deviceStatusList.stream().collect(Collectors.toMap(DeviceStatus::getStationId, Function.identity()));
         return stations.stream().map(station -> {
             DeviceStatus deviceStatus = cache.get(station.getId());
             DeviceStatusResp resp = new DeviceStatusResp();
@@ -167,6 +168,7 @@ public class DeviceStatusService {
             resp.setEvaluate(station.getFlow());
             resp.setLongitude(station.getLongitude());
             resp.setLatitude(station.getLatitude());
+            resp.setPlayUrl(station.getPlayUrl());
             return resp;
         }).collect(Collectors.toList());
     }

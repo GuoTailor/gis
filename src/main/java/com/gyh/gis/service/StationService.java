@@ -5,18 +5,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.gis.domain.DeviceStatus;
 import com.gyh.gis.domain.Station;
-import com.gyh.gis.domain.TargetRate;
 import com.gyh.gis.dto.resp.StationVideo;
 import com.gyh.gis.enums.StateEnum;
 import com.gyh.gis.mapper.DeviceStatusMapper;
 import com.gyh.gis.mapper.StationMapper;
-import com.gyh.gis.mapper.TargetRateMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,9 +59,11 @@ public class StationService {
                     DeviceStatus deviceStatus = deviceStatusMapper.selectOne(Wrappers.lambdaQuery(DeviceStatus.class).eq(DeviceStatus::getStationId, it.getId()).last("limit 1"));
                     if (deviceStatus != null) {
                         video.setValue(deviceStatus.getValue());
-                        video.setOnLine(deviceStatus.getValue() != null && deviceStatus.getValue().compareTo(BigDecimal.ZERO) > 0);
+//                        video.setOnLine(deviceStatus.getValue() != null && deviceStatus.getValue().compareTo(BigDecimal.ZERO) > 0 && deviceStatus.getTime().plusMinutes(10).isAfter(LocalDateTime.now()));
+                        video.setOnLine(true);
                         if (deviceStatus.getErrorState() == StateEnum.ERROR) {
-                            video.setAlarmState(StateEnum.ERROR);
+                            video.setAlarmState(StateEnum.NORMAL);
+                            video.setOnLine(false);
                         } else if (deviceStatus.getValue().compareTo(it.getFlow()) < 0) {
                             video.setAlarmState(StateEnum.ALARM);
                         } else {

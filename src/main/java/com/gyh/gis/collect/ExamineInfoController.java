@@ -24,7 +24,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * create by GYH on 2023/9/13
@@ -183,10 +182,10 @@ public class ExamineInfoController {
         for (ExamineResp resp : resps) {
             for (ExamineResp.Target target : resp.getTargets()) {
                 String time = switch (per) {
-                    case HOUR -> fmtHour.format(target.getTime());
-                    case DAY -> fmtDay.format(target.getTime());
-                    case MONTH -> fmtMonth.format(target.getTime());
-                    case YEAR -> "";
+                    case HOUR -> "";
+                    case DAY -> fmtHour.format(target.getTime());
+                    case MONTH -> fmtDay.format(target.getTime());
+                    case YEAR -> fmtMonth.format(target.getTime());
                 };
                 times.add(time + "达标情况");
                 times.add(time + "在线情况");
@@ -209,10 +208,10 @@ public class ExamineInfoController {
             Map<String, ExamineResp.Target> map = new HashMap<>();
             for (ExamineResp.Target target : resp.getTargets()) {
                 String time = switch (per) {
-                    case HOUR -> fmtHour.format(target.getTime());
-                    case DAY -> fmtDay.format(target.getTime());
-                    case MONTH -> fmtMonth.format(target.getTime());
-                    case YEAR -> "";
+                    case HOUR -> "";
+                    case DAY -> fmtHour.format(target.getTime());
+                    case MONTH -> fmtDay.format(target.getTime());
+                    case YEAR -> fmtMonth.format(target.getTime());
                 };
                 map.put(time, target);
             }

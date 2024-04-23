@@ -1,5 +1,6 @@
-package com.gyh.gis.netty;
+package com.gyh.gis.netty.client;
 
+import com.gyh.gis.netty.MessageListener;
 import io.netty.channel.ChannelHandlerContext;
 
 /**

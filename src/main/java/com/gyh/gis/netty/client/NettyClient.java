@@ -1,5 +1,7 @@
-package com.gyh.gis.netty;
+package com.gyh.gis.netty.client;
 
+import com.gyh.gis.netty.MessageListener;
+import com.gyh.gis.netty.NettyServletResponse;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;

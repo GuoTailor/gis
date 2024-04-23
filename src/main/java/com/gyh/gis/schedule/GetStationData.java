@@ -3,8 +3,8 @@ package com.gyh.gis.schedule;
 import com.gyh.gis.domain.Station;
 import com.gyh.gis.dto.req.DeviceStatusInsertReq;
 import com.gyh.gis.enums.StateEnum;
-import com.gyh.gis.netty.NettyClient;
 import com.gyh.gis.netty.NettyServletRequest;
+import com.gyh.gis.netty.client.NettyClient;
 import com.gyh.gis.service.DeviceStatusService;
 import com.gyh.gis.service.StationService;
 import com.gyh.gis.service.TargetRateService;
@@ -39,29 +39,33 @@ public class GetStationData {
     public void getData() {
         log.info("定时任务开始获取水电站流量》》》》》》》》》》》");
         List<Station> stations = stationService.getAll();
-        stations.parallelStream()
+        stations.stream()
                 .filter(it -> StringUtils.hasLength(it.getIp()) && it.getPort() != null)
                 .forEach(it -> {
-                    log.info("{} 获取数据", it.getId());
-                    GenericFutureListener<? extends Future<? super Void>> listener = future -> {
-                        log.info("{} 发送{}", it.getId(), future.isSuccess() ? "成功" : "失败");
-                        targetRateService.statistic(it.getId(), future.isSuccess());
-                    };
-                    if (!nettyClient.exist(it.getIp(), it.getPort())) {
-                        try {
-                            nettyClient.connect(it.getIp(), it.getPort(),
-                                    request -> saveData(false, request, it),
-                                    request -> nettyClient.sendAsyncGainValue(it.getIp(), it.getPort())
-                                            .addListener(listener)
-                            );
-                        } catch (Exception e) {
-                            saveData(true, null, it);
-                            targetRateService.statistic(it.getId(), false);
-                            log.error(e.getLocalizedMessage(), e);
+                    try {
+                        log.info("{} 获取数据", it.getId());
+                        GenericFutureListener<? extends Future<? super Void>> listener = future -> {
+                            log.info("{} 发送{}", it.getId(), future.isSuccess() ? "成功" : "失败");
+                            targetRateService.statistic(it.getId(), future.isSuccess());
+                        };
+                        if (!nettyClient.exist(it.getIp(), it.getPort())) {
+                            try {
+                                nettyClient.connect(it.getIp(), it.getPort(),
+                                        request -> saveData(false, request, it),
+                                        request -> nettyClient.sendAsyncGainValue(it.getIp(), it.getPort())
+                                                .addListener(listener)
+                                );
+                            } catch (Exception e) {
+                                saveData(true, null, it);
+                                targetRateService.statistic(it.getId(), false);
+                                log.error(e.getLocalizedMessage(), e);
+                            }
+                        } else {
+                            ChannelFuture channelFuture = nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
+                            channelFuture.addListener(listener);
                         }
-                    } else {
-                        ChannelFuture channelFuture = nettyClient.sendAsyncGainValue(it.getIp(), it.getPort());
-                        channelFuture.addListener(listener);
+                    } catch (Exception e) {
+                        log.error(e.getLocalizedMessage(), e);
                     }
                 });
     }

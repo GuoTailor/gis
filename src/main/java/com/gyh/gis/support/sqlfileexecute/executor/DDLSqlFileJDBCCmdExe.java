@@ -3,7 +3,6 @@ package com.gyh.gis.support.sqlfileexecute.executor;
 import com.gyh.gis.support.sqlfileexecute.cmd.DDLSqlFileJDBCCmd;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

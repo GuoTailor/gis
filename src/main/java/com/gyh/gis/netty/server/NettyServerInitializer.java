@@ -1,8 +1,10 @@
-package com.gyh.gis.netty;
+package com.gyh.gis.netty.server;
 
+import com.gyh.gis.netty.MessageEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * Created by GYH on 2018/12/3.
@@ -19,7 +21,8 @@ public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        //pipeline.addLast(new IdleStateHandler(60 * 3, 0, 0));
+        // 空闲一个半小时
+        pipeline.addLast(new IdleStateHandler(60 * 90, 0, 0));
         pipeline.addLast(new MessageDecoder());
         pipeline.addLast(messageEncoder);
         pipeline.addLast(serverHandler);

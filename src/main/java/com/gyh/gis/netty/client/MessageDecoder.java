@@ -1,10 +1,10 @@
-package com.gyh.gis.netty;
+package com.gyh.gis.netty.client;
 
+import com.gyh.gis.netty.NettyServletRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,7 +25,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         if (in.isReadable() && readable >= BODY_LENGTH) {
             in.readBytes(data);
             logger.info(Arrays.toString(data));
-            
+
             NettyServletRequest inputMessage = new NettyServletRequest(data, ctx);
             out.add(inputMessage);
         }

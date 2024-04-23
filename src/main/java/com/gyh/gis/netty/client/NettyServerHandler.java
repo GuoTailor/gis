@@ -1,5 +1,8 @@
-package com.gyh.gis.netty;
+package com.gyh.gis.netty.client;
 
+import com.gyh.gis.netty.MessageListener;
+import com.gyh.gis.netty.NettyServletRequest;
+import com.gyh.gis.netty.NettyServletResponse;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +35,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         NettyContext nettyContext = new NettyContext();
         nettyContext.cxt = ctx;
         NettyContext old = cache.putIfAbsent(key, nettyContext);
-        System.out.println(key + "++" + (old == null));
+        logger.info("{}++{}", key, old == null);
         if (old != null) {
             if (old.cxt != null) old.cxt.channel().close();
             old.cxt = ctx;
@@ -41,11 +44,11 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
         var inet = ((InetSocketAddress) ctx.channel().remoteAddress());
         String address = inet.getAddress().getHostAddress();
         int port = inet.getPort();
         logger.info("连接关闭{} {}", address, port);
-        super.channelInactive(ctx);
         cache.forEach((k, value) -> {
             if (value.cxt.equals(ctx)) cache.remove(k);
         });
@@ -72,6 +75,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         int port = inet.getPort();
         String key = address + NettyClient.decollator + port;
         NettyContext nettyContext = cache.get(key);
+        logger.info("{} 读取数据 {}", key, nettyContext == null);
         if (nettyContext != null && nettyContext.listener != null)
             nettyContext.listener.onMessage((NettyServletRequest) msg);
     }
@@ -80,7 +84,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         NettyContext nettyContext = new NettyContext();
         nettyContext.listener = listener;
         NettyContext old = cache.putIfAbsent(ipPort, nettyContext);
-        System.out.println(ipPort + "--" + (old == null));
+        logger.info("{} 添加监听 {}", ipPort, old == null);
         if (old != null) old.listener = listener;
     }
 

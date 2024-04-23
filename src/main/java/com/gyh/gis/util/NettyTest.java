@@ -1,8 +1,6 @@
 package com.gyh.gis.util;
 
-import com.gyh.gis.netty.NettyClient;
-
-import java.net.ConnectException;
+import com.gyh.gis.netty.client.NettyClient;
 
 /**
  * create by GYH on 2022/10/11

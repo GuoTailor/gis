@@ -4,6 +4,7 @@ import com.gyh.gis.enums.StateEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * create by GYH on 2022/9/26
@@ -30,4 +31,6 @@ public class DeviceStatusInsertReq {
      * 报警相机截图
      */
     private String screenshotUrl;
+
+    private LocalDateTime createTime;
 }

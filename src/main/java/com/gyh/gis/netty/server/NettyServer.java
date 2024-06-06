@@ -1,14 +1,23 @@
 package com.gyh.gis.netty.server;
 
+import com.gyh.gis.domain.Station;
+import com.gyh.gis.dto.req.DeviceStatusInsertReq;
+import com.gyh.gis.enums.StateEnum;
+import com.gyh.gis.mapper.StationMapper;
+import com.gyh.gis.service.DeviceStatusService;
+import com.gyh.gis.service.TargetRateService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -19,6 +28,13 @@ import java.util.Arrays;
 @Slf4j
 @Service
 public class NettyServer implements InitializingBean {
+    @Autowired
+    private DeviceStatusService deviceStatusService;
+    @Autowired
+    private TargetRateService targetRateService;
+    @Resource
+    private StationMapper stationMapper;
+
     public NettyServerInitializer bind(int port) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -41,12 +57,14 @@ public class NettyServer implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        NettyServerInitializer bind = new NettyServer().bind(9000);
+        NettyServerInitializer bind = bind(9000);
         bind.getServerHandler().addListener(request -> {
             byte[] body = request.getBody();
-            log.info("onMessage:{}", body);
             String code = HexUtils.toHexString(Arrays.copyOfRange(body, 2, 7));
-            log.info(code);
+            if (body[1] == (byte) 0xB0) {
+                log.info("{} 心跳", code);
+                return;
+            }
             String day = Integer.toHexString(body[25]);
             String hour = Integer.toHexString(body[24]);
             String minute = Integer.toHexString(body[23]);
@@ -65,8 +83,20 @@ public class NettyServer implements InitializingBean {
             if (flag == 1) {
                 sb.insert(0, "-");
             }
-            float flow = Float.parseFloat(sb.toString());
-            System.out.println(flow);
+            BigDecimal flow = new BigDecimal(sb.toString());
+            log.info("站点编码 {} 流量 {}", code, flow);
+            Station bySysCode = stationMapper.getBySysCode(code);
+            if (bySysCode == null) {
+                log.info("站点编码 {} 不存在", code);
+                return;
+            }
+            DeviceStatusInsertReq req = new DeviceStatusInsertReq();
+            req.setStationId(bySysCode.getId());
+            req.setErrorState(StateEnum.NORMAL);
+            req.setValue(flow);
+            req.setCreateTime(localDateTime);
+            deviceStatusService.insertOrUpdate(req);
+            targetRateService.statistic(bySysCode.getId(), true);
         });
     }
 }

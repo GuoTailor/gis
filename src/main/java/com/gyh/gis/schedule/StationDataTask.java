@@ -35,7 +35,7 @@ public class StationDataTask {
     @Autowired
     private ExamineInfoService examineInfoService;
 
-    @Scheduled(cron = "1 0 4 * * ?")
+    @Scheduled(cron = "5 0 4 * * ?")
     public void configureTasks() {
         var date = LocalDate.now().minusDays(1);
         log.info("开始统计 {} 每个站点流量》》》》》》》》》》》", date);
@@ -75,6 +75,7 @@ public class StationDataTask {
                 log.info("统计站点 {} 数据出错", it.getStation(), exception);
             }
         }
+        log.info("结束统计 {} 每个站点流量》》》》》》》》》》》", date);
     }
 
     /**

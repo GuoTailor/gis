@@ -20,19 +20,19 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.info("服务端通道打开");
+        logger.info("通道打开{}", ctx.channel().id());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("服务端连接关闭");
+        logger.info("连接关闭{}", ctx.channel().id());
         super.channelInactive(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
-        logger.info("连接异常");
+        logger.info("连接异常{}", ctx.channel().id());
     }
 
     @Override

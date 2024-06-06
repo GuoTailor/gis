@@ -59,7 +59,11 @@ public class DeviceStatusService {
         synchronized (DeviceStatusService.class) {
             DeviceStatus oldDevice = deviceStatusMapper.selectOne(wrapper);
             if (oldDevice != null) {
-                oldDevice.setTime(LocalDateTime.now());
+                if (req.getCreateTime() != null) {
+                    oldDevice.setTime(req.getCreateTime());
+                } else {
+                    oldDevice.setTime(LocalDateTime.now());
+                }
                 oldDevice.setValue(req.getValue());
                 oldDevice.setErrorState(req.getErrorState());
                 if (StateEnum.ERROR == req.getErrorState()) {
@@ -72,7 +76,11 @@ public class DeviceStatusService {
                 DeviceStatus deviceStatus = new DeviceStatus();
                 deviceStatus.setStationId(req.getStationId());
                 deviceStatus.setErrorState(req.getErrorState());
-                deviceStatus.setTime(LocalDateTime.now());
+                if (req.getCreateTime() != null) {
+                    deviceStatus.setTime(req.getCreateTime());
+                } else {
+                    deviceStatus.setTime(LocalDateTime.now());
+                }
                 if (req.getValue() != null) {
                     deviceStatus.setValue(req.getValue());
                 } else {
@@ -95,7 +103,11 @@ public class DeviceStatusService {
             minuteHistory.setId(id);
             minuteHistory.setStationId(req.getStationId());
             minuteHistory.setValue(req.getValue());
-            minuteHistory.setTime(LocalDateTime.now());
+            if (req.getCreateTime() != null) {
+                minuteHistory.setTime(req.getCreateTime());
+            } else {
+                minuteHistory.setTime(LocalDateTime.now());
+            }
             if (station.getFlow().compareTo(req.getValue()) > 0) {
                 minuteHistory.setAlarmState(StateEnum.ALARM);
                 minuteHistory.setCancelAlarm(false);

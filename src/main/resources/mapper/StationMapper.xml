@@ -18,6 +18,11 @@
         <result column="ip" jdbcType="VARCHAR" property="ip"/>
         <result column="port" jdbcType="INTEGER" property="port"/>
         <result column="range" jdbcType="REAL" property="range"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="camera_ip" jdbcType="VARCHAR" property="cameraIp"/>
+        <result column="play_url" jdbcType="VARCHAR" property="playUrl"/>
+        <result column="camera_type" jdbcType="VARCHAR" property="cameraType"/>
+        <result column="sys_code" jdbcType="VARCHAR" property="sysCode"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
@@ -34,9 +39,240 @@
         phone,
         ip,
         port,
-        "range"
+        "range",
+        code,
+        camera_ip,
+        play_url,
+        camera_type,
+        sys_code
     </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        <!--@mbg.generated-->
+        select
+        <include refid="Base_Column_List"/>
+        from station
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        <!--@mbg.generated-->
+        delete
+        from station
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insertSelective" parameterType="com.gyh.gis.domain.Station">
+        <!--@mbg.generated-->
+        insert into station
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="company != null">
+                company,
+            </if>
+            <if test="station != null">
+                station,
+            </if>
+            <if test="area != null">
+                area,
+            </if>
+            <if test="flow != null">
+                flow,
+            </if>
+            <if test="location != null">
+                "location",
+            </if>
+            <if test="longitude != null">
+                longitude,
+            </if>
+            <if test="latitude != null">
+                latitude,
+            </if>
+            <if test="power != null">
+                "power",
+            </if>
+            <if test="contacts != null">
+                contacts,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="ip != null">
+                ip,
+            </if>
+            <if test="port != null">
+                port,
+            </if>
+            <if test="range != null">
+                "range",
+            </if>
+            <if test="code != null">
+                code,
+            </if>
+            <if test="cameraIp != null">
+                camera_ip,
+            </if>
+            <if test="playUrl != null">
+                play_url,
+            </if>
+            <if test="cameraType != null">
+                camera_type,
+            </if>
+            <if test="sysCode != null">
+                sys_code,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="company != null">
+                #{company,jdbcType=VARCHAR},
+            </if>
+            <if test="station != null">
+                #{station,jdbcType=VARCHAR},
+            </if>
+            <if test="area != null">
+                #{area,jdbcType=VARCHAR},
+            </if>
+            <if test="flow != null">
+                #{flow,jdbcType=NUMERIC},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null">
+                #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null">
+                #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="power != null">
+                #{power,jdbcType=VARCHAR},
+            </if>
+            <if test="contacts != null">
+                #{contacts,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="ip != null">
+                #{ip,jdbcType=VARCHAR},
+            </if>
+            <if test="port != null">
+                #{port,jdbcType=INTEGER},
+            </if>
+            <if test="range != null">
+                #{range,jdbcType=REAL},
+            </if>
+            <if test="code != null">
+                #{code,jdbcType=VARCHAR},
+            </if>
+            <if test="cameraIp != null">
+                #{cameraIp,jdbcType=VARCHAR},
+            </if>
+            <if test="playUrl != null">
+                #{playUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="cameraType != null">
+                #{cameraType,jdbcType=VARCHAR},
+            </if>
+            <if test="sysCode != null">
+                #{sysCode,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.gyh.gis.domain.Station">
+        <!--@mbg.generated-->
+        update station
+        <set>
+            <if test="company != null">
+                company = #{company,jdbcType=VARCHAR},
+            </if>
+            <if test="station != null">
+                station = #{station,jdbcType=VARCHAR},
+            </if>
+            <if test="area != null">
+                area = #{area,jdbcType=VARCHAR},
+            </if>
+            <if test="flow != null">
+                flow = #{flow,jdbcType=NUMERIC},
+            </if>
+            <if test="location != null">
+                "location" = #{location,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="power != null">
+                "power" = #{power,jdbcType=VARCHAR},
+            </if>
+            <if test="contacts != null">
+                contacts = #{contacts,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="ip != null">
+                ip = #{ip,jdbcType=VARCHAR},
+            </if>
+            <if test="port != null">
+                port = #{port,jdbcType=INTEGER},
+            </if>
+            <if test="range != null">
+                "range" = #{range,jdbcType=REAL},
+            </if>
+            <if test="code != null">
+                code = #{code,jdbcType=VARCHAR},
+            </if>
+            <if test="cameraIp != null">
+                camera_ip = #{cameraIp,jdbcType=VARCHAR},
+            </if>
+            <if test="playUrl != null">
+                play_url = #{playUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="cameraType != null">
+                camera_type = #{cameraType,jdbcType=VARCHAR},
+            </if>
+            <if test="sysCode != null">
+                sys_code = #{sysCode,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.gyh.gis.domain.Station">
+        <!--@mbg.generated-->
+        update station
+        set company     = #{company,jdbcType=VARCHAR},
+            station     = #{station,jdbcType=VARCHAR},
+            area        = #{area,jdbcType=VARCHAR},
+            flow        = #{flow,jdbcType=NUMERIC},
+            "location"  = #{location,jdbcType=VARCHAR},
+            longitude   = #{longitude,jdbcType=DOUBLE},
+            latitude    = #{latitude,jdbcType=DOUBLE},
+            "power"     = #{power,jdbcType=VARCHAR},
+            contacts    = #{contacts,jdbcType=VARCHAR},
+            phone       = #{phone,jdbcType=VARCHAR},
+            ip          = #{ip,jdbcType=VARCHAR},
+            port        = #{port,jdbcType=INTEGER},
+            "range"     = #{range,jdbcType=REAL},
+            code        = #{code,jdbcType=VARCHAR},
+            camera_ip   = #{cameraIp,jdbcType=VARCHAR},
+            play_url    = #{playUrl,jdbcType=VARCHAR},
+            camera_type = #{cameraType,jdbcType=VARCHAR},
+            sys_code    = #{sysCode,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
     <select id="getAllArea" resultType="string">
-        SELECT distinct area FROM "station"
+        SELECT distinct area
+        FROM "station"
+    </select>
+
+    <select id="getBySysCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM "station"
+        WHERE sys_code = #{sysCode}
     </select>
 </mapper>

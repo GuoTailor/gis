@@ -1,12 +1,12 @@
 package com.gyh.gis.domain;
 
-import java.math.BigDecimal;
-
 import com.gyh.gis.enums.CameraTypeEnum;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
- * create by GYH on 2022/10/12
+ * create by GYH on 2024/4/25
  */
 @Data
 public class Station {
@@ -96,4 +96,14 @@ public class Station {
      * 相机类型
      */
     private CameraTypeEnum cameraType;
+
+    /**
+     * 系统监测编码
+     */
+    private String sysCode;
+
+    /**
+     * 是否是推送
+     */
+    private Boolean isPush;
 }

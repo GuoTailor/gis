@@ -3,6 +3,7 @@ package com.gyh.gis.netty.client;
 import com.gyh.gis.netty.MessageListener;
 import com.gyh.gis.netty.NettyServletResponse;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -52,6 +53,10 @@ public class NettyClient {
                 })
                 .channel();
         return serverHandler;
+    }
+
+    public void close(String ip, int port) {
+        initializer.getServerHandler().close(ip + decollator + port);
     }
 
     /**

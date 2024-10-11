@@ -95,12 +95,22 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * @param response 消息
      */
     public ChannelFuture send(String ipPort, NettyServletResponse response) {
-        return cache.get(ipPort).cxt.channel().writeAndFlush(response);
+        NettyContext nettyContext = cache.get(ipPort);
+        if (nettyContext == null) {
+            return null;
+        }
+        return nettyContext.cxt.channel().writeAndFlush(response);
     }
 
     public boolean exist(String ipPort) {
         return cache.containsKey(ipPort);
     }
 
+    public void close(String ipPort) {
+        NettyContext nettyContext = cache.remove(ipPort);
+        if (nettyContext != null) {
+            nettyContext.cxt.channel().close();
+        }
+    }
 
 }

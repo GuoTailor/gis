@@ -48,6 +48,10 @@ public class GetStationData {
                     GenericFutureListener<? extends Future<? super Void>> listener = future -> {
                         log.info("{} 发送{}", it.getId(), future.isSuccess() ? "成功" : "失败");
                         targetRateService.statistic(it.getId(), future.isSuccess());
+                        if (!future.isSuccess()) {
+                            log.info("{} 发送失败 连接断开", it.getId());
+                            nettyClient.close(it.getIp(), it.getPort());
+                        }
                     };
                     if (!nettyClient.exist(it.getIp(), it.getPort())) {
                         try {

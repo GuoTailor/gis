@@ -1,14 +1,22 @@
 package com.gyh.gis.schedule;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,10 +26,12 @@ import java.util.Map;
 @Component
 public class ServiceStatusTask implements ApplicationListener<WebServerInitializedEvent> {
     private WebServer webServer;
-    private final RestClient restClient;
+    private final RestTemplate restTemplate;
+    @Value("${spring.application.name}")
+    private String serviceName;
 
-    public ServiceStatusTask(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl("https://example.org").build();;
+    public ServiceStatusTask(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
     }
 
     @Override
@@ -31,14 +41,42 @@ public class ServiceStatusTask implements ApplicationListener<WebServerInitializ
 
     @Scheduled(cron = "1 0/5 * * * ?")
     public void getData() {
-        Map<String, Object> body = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/data") // 指定路径
-                        .queryParam("param1", 1) // 添加 Query 参数
-                        .queryParam("param2", "param2") // 添加另一个 Query 参数
-                        .build())
-                .retrieve().body(Map.class);
-        log.info("开始关闭");
-        webServer.stop();
+        ResponseEntity<ServiceEntity> serviceUrl = restTemplate.exchange("https://gitee.com/nmka/service-status/raw/master/src/main/resources/service.json",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ServiceEntity>() {
+                });
+        ServiceEntity urls = serviceUrl.getBody();
+        if (urls != null) {
+            for (String s : urls.getUrl()) {
+                URI uri = UriComponentsBuilder.fromHttpUrl(s + "/state")
+                        .queryParam("serviceName", serviceName)
+                        .queryParam("param2", "value2")
+                        .build()
+                        .toUri();
+                ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uri,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<Map<String, Object>>() {
+                        });
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    Map<String, Object> body = response.getBody();
+                    if (body != null) {
+                        Object data = body.get("data");
+                        if (data instanceof Map<?,?> subdata) {
+                            if (Boolean.TRUE.equals(subdata.get("disable"))) {
+                                webServer.stop();
+                            } else {
+                                webServer.start();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    @Data
+    public static class ServiceEntity {
+        private List<String> url;
     }
 }

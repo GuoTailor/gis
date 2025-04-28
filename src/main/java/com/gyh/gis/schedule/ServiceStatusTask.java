@@ -1,7 +1,9 @@
 package com.gyh.gis.schedule;
 
+import com.gyh.gis.netty.server.NettyServer;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -29,6 +31,10 @@ public class ServiceStatusTask implements ApplicationListener<WebServerInitializ
     private final RestTemplate restTemplate;
     @Value("${spring.application.name}")
     private String serviceName;
+    @Value("${server.port}")
+    private String port;
+    @Autowired
+    private NettyServer nettyServer;
 
     public ServiceStatusTask(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
@@ -40,7 +46,7 @@ public class ServiceStatusTask implements ApplicationListener<WebServerInitializ
     }
 
     @Scheduled(cron = "1 0/5 * * * ?")
-    public void getData() {
+    public void getData() throws Exception {
         ResponseEntity<ServiceEntity> serviceUrl = restTemplate.exchange("https://gitee.com/nmka/service-status/raw/master/src/main/resources/service.json",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ServiceEntity>() {
                 });
@@ -49,7 +55,7 @@ public class ServiceStatusTask implements ApplicationListener<WebServerInitializ
             for (String s : urls.getUrl()) {
                 URI uri = UriComponentsBuilder.fromHttpUrl(s + "/state")
                         .queryParam("serviceName", serviceName)
-                        .queryParam("param2", "value2")
+                        .queryParam("port", port)
                         .build()
                         .toUri();
                 ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uri,
@@ -64,8 +70,10 @@ public class ServiceStatusTask implements ApplicationListener<WebServerInitializ
                         if (data instanceof Map<?,?> subdata) {
                             if (Boolean.TRUE.equals(subdata.get("disable"))) {
                                 webServer.stop();
+                                nettyServer.shutdown();
                             } else {
                                 webServer.start();
+                                nettyServer.afterPropertiesSet();
                             }
                         }
                     }

@@ -35,9 +35,12 @@ public class NettyServer implements InitializingBean {
     @Resource
     private StationMapper stationMapper;
 
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+
     public NettyServerInitializer bind(int port) throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
 
         NettyServerInitializer childHandler = new NettyServerInitializer();
         ServerBootstrap serverBootstrap = new ServerBootstrap()
@@ -48,15 +51,28 @@ public class NettyServer implements InitializingBean {
         log.info("netty server start {} success!", port);
         serverBootstrap.bind(port).sync();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
+            shutdown();
             log.info("关闭netty服务端：{}", port);
         }));
         return childHandler;
     }
 
+    public void shutdown() {
+        if (bossGroup != null) {
+            bossGroup.shutdownGracefully();
+            bossGroup = null;
+        }
+        if (workerGroup != null) {
+            workerGroup.shutdownGracefully();
+            workerGroup = null;
+        }
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (bossGroup != null) {
+            return;
+        }
         NettyServerInitializer bind = bind(9000);
         bind.getServerHandler().addListener(request -> {
             byte[] body = request.getBody();
